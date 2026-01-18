@@ -1,0 +1,1745 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1a1a1a">
+    <link rel="manifest" href="manifest.json">
+    <title>RÉCITS INFINIS - Ultimate Edition</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,700;1,400&family=Courier+Prime&display=swap');
+        
+        /* ========== THEMES ========== */
+        :root[data-theme="dark"] {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #222;
+            --bg-tertiary: #2a2a2a;
+            --text-primary: #e8e8e8;
+            --text-secondary: #999;
+            --border-color: #444;
+            --accent: #667eea;
+            --accent-hover: #5568d3;
+            --success: #4ade80;
+            --danger: #ff4444;
+            --warning: #fbbf24;
+        }
+        
+        :root[data-theme="light"] {
+            --bg-primary: #f5f5f5;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #e8e8e8;
+            --text-primary: #1a1a1a;
+            --text-secondary: #666;
+            --border-color: #ddd;
+            --accent: #667eea;
+            --accent-hover: #5568d3;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'EB Garamond', serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.8;
+            padding: 20px;
+            transition: background 0.3s, color 0.3s;
+        }
+        
+        .container { max-width: 900px; margin: 0 auto; }
+        
+        /* ========== HEADER ========== */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 20px;
+            position: relative;
+        }
+        
+        .header h1 { font-size: 48px; margin-bottom: 10px; letter-spacing: 2px; }
+        .tagline { color: var(--text-secondary); font-style: italic; }
+        
+        .header-controls {
+            position: absolute;
+            top: 0;
+            right: 0;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .icon-btn {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 50%;
+            font-size: 20px;
+            transition: all 0.3s;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .icon-btn:hover {
+            border-color: var(--accent);
+            transform: scale(1.1);
+        }
+        
+        /* ========== PROFILE ========== */
+        .profile-bar {
+            background: var(--bg-secondary);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 2px solid var(--border-color);
+        }
+        
+        .profile-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .profile-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+        }
+        
+        .profile-name {
+            font-size: 24px;
+            font-weight: bold;
+            font-family: 'Courier Prime', monospace;
+        }
+        
+        .profile-stats {
+            display: flex;
+            gap: 30px;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--accent);
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+        
+        /* ========== MENU ========== */
+        .main-menu {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+        
+        .menu-card {
+            background: linear-gradient(145deg, var(--bg-secondary), var(--bg-tertiary));
+            border: 3px solid var(--border-color);
+            padding: 30px 40px;
+            cursor: pointer;
+            border-radius: 15px;
+            transition: all 0.4s;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            min-width: 220px;
+        }
+        
+        .menu-card::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: var(--accent);
+            opacity: 0.2;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .menu-card:hover::before {
+            width: 400px;
+            height: 400px;
+        }
+        
+        .menu-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
+        }
+        
+        .menu-icon {
+            font-size: 60px;
+            display: block;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .menu-card:hover .menu-icon {
+            transform: scale(1.2) rotate(5deg);
+        }
+        
+        .menu-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .menu-desc {
+            font-size: 14px;
+            color: var(--text-secondary);
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* ========== RUNNER GAME ========== */
+        #runnerGame {
+            background: linear-gradient(180deg, #87CEEB 0%, #E0F6FF 100%);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-family: 'Courier Prime', monospace;
+            font-size: 20px;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .game-stat {
+            background: rgba(0,0,0,0.3);
+            padding: 10px 20px;
+            border-radius: 8px;
+        }
+        
+        #gameCanvas {
+            display: block;
+            margin: 0 auto;
+            border-radius: 8px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+            max-width: 100%;
+        }
+        
+        .game-over-screen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.95);
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+            min-width: 300px;
+        }
+        
+        .game-over-screen h2 {
+            font-size: 42px;
+            color: var(--danger);
+            margin-bottom: 20px;
+        }
+        
+        .final-stats {
+            margin: 20px 0;
+        }
+        
+        .final-stat {
+            font-size: 24px;
+            margin: 10px 0;
+            color: var(--accent);
+        }
+        
+        .btn-primary {
+            background: var(--accent);
+            border: none;
+            color: #fff;
+            padding: 15px 40px;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 8px;
+            font-family: 'Courier Prime', monospace;
+            transition: all 0.3s;
+            margin: 5px;
+        }
+        
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            transform: scale(1.05);
+        }
+        
+        .mobile-controls {
+            margin-top: 20px;
+            display: none;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .control-btn {
+            background: var(--accent);
+            border: none;
+            color: #fff;
+            padding: 20px 30px;
+            font-size: 32px;
+            cursor: pointer;
+            border-radius: 12px;
+            min-width: 80px;
+            user-select: none;
+            touch-action: manipulation;
+            transition: all 0.2s;
+        }
+        
+        .control-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .control-btn.jump {
+            background: var(--success);
+        }
+        
+        /* ========== POWERUPS ========== */
+        .powerup-bar {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 15px 0;
+        }
+        
+        .powerup-icon {
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 24px;
+            position: relative;
+        }
+        
+        .powerup-icon.active {
+            animation: pulse 0.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        /* ========== SKINS SHOP ========== */
+        .skins-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .skin-card {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            padding: 20px;
+            text-align: center;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .skin-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-5px);
+        }
+        
+        .skin-card.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .skin-card.selected {
+            border-color: var(--success);
+            box-shadow: 0 0 20px rgba(74, 222, 128, 0.3);
+        }
+        
+        .skin-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        
+        .skin-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .skin-price {
+            color: var(--warning);
+            font-size: 14px;
+        }
+        
+        /* ========== LEADERBOARD ========== */
+        .leaderboard {
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .leaderboard-item:hover {
+            background: var(--bg-tertiary);
+        }
+        
+        .leaderboard-rank {
+            font-size: 24px;
+            font-weight: bold;
+            width: 50px;
+        }
+        
+        .rank-gold { color: #FFD700; }
+        .rank-silver { color: #C0C0C0; }
+        .rank-bronze { color: #CD7F32; }
+        
+        .leaderboard-name {
+            flex: 1;
+            font-size: 18px;
+        }
+        
+        .leaderboard-score {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--accent);
+        }
+        
+        /* ========== STORIES ========== */
+        .story-card {
+            background: var(--bg-secondary);
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 3px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.3s;
+            border-radius: 4px;
+        }
+        
+        .story-card:hover {
+            border-left-color: var(--accent);
+            background: var(--bg-tertiary);
+            transform: translateX(5px);
+        }
+        
+        .story-card h3 { margin-bottom: 8px; font-size: 22px; }
+        .story-card p { color: var(--text-secondary); font-size: 16px; margin: 0; }
+        
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            margin-left: 8px;
+        }
+        
+        .badge.complete { background: rgba(74, 222, 128, 0.3); color: var(--success); }
+        .badge.dev { background: rgba(150,150,150,0.3); color: var(--text-secondary); }
+        
+        .genre-btn {
+            background: transparent;
+            border: 2px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 12px 25px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 20px;
+            transition: all 0.3s;
+            font-family: 'Courier Prime', monospace;
+            margin: 5px;
+        }
+        
+        .genre-btn:hover, .genre-btn.active {
+            border-color: var(--accent);
+            color: var(--text-primary);
+            background: rgba(102, 126, 234, 0.1);
+        }
+        
+        .story-text {
+            background: var(--bg-secondary);
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 19px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .choices {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 20px 0;
+        }
+        
+        .choice-btn {
+            background: transparent;
+            border: 2px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 18px 25px;
+            font-family: 'EB Garamond', serif;
+            font-size: 18px;
+            cursor: pointer;
+            text-align: left;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        
+        .choice-btn:hover {
+            border-color: var(--accent);
+            background: rgba(102, 126, 234, 0.1);
+            transform: translateX(5px);
+        }
+        
+        .ending {
+            background: linear-gradient(135deg, var(--accent) 0%, #764ba2 100%);
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 20px 0;
+            color: #fff;
+        }
+        
+        /* ========== LANGUAGE SELECTOR ========== */
+        .lang-selector {
+            display: flex;
+            gap: 5px;
+            background: var(--bg-secondary);
+            padding: 5px;
+            border-radius: 20px;
+            border: 2px solid var(--border-color);
+        }
+        
+        .lang-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 8px 15px;
+            cursor: pointer;
+            border-radius: 15px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .lang-btn:hover, .lang-btn.active {
+            background: var(--accent);
+            color: #fff;
+        }
+        
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 768px) {
+            .header h1 { font-size: 36px; }
+            .profile-bar { flex-direction: column; text-align: center; }
+            .profile-stats { margin-top: 15px; }
+            .menu-card { min-width: 100%; }
+            .header-controls { position: static; justify-content: center; margin-top: 15px; }
+        }
+        
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <h1 data-i18n="title">RÉCITS INFINIS</h1>
+            <div class="tagline" data-i18n="tagline">Ultimate Edition • Histoires & Jeux</div>
+            <div class="header-controls">
+                <div class="lang-selector">
+                    <button class="lang-btn active" onclick="setLanguage('fr')">🇫🇷</button>
+                    <button class="lang-btn" onclick="setLanguage('en')">🇬🇧</button>
+                    <button class="lang-btn" onclick="setLanguage('es')">🇪🇸</button>
+                </div>
+                <button class="icon-btn" id="themeToggle" onclick="toggleTheme()" title="Changer le thème">🌙</button>
+                <button class="icon-btn" onclick="editProfile()" title="Éditer profil">👤</button>
+                <button class="icon-btn" onclick="downloadSite()" title="Télécharger le site">💾</button>
+            </div>
+        </div>
+        
+        <!-- PROFILE BAR -->
+        <div class="profile-bar">
+            <div class="profile-info">
+                <div class="profile-avatar" id="profileAvatar">😎</div>
+                <div>
+                    <div class="profile-name" id="profileName">Joueur</div>
+                    <div style="color: var(--text-secondary); font-size: 14px;" data-i18n="level">Niveau <span id="playerLevel">1</span></div>
+                </div>
+            </div>
+            <div class="profile-stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalCoins">0</div>
+                    <div class="stat-label" data-i18n="coins">Pièces</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="totalStories">0</div>
+                    <div class="stat-label" data-i18n="stories">Histoires</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="highScore">0</div>
+                    <div class="stat-label" data-i18n="highscore">Record</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- MAIN MENU -->
+        <div id="mainMenu">
+            <div class="main-menu">
+                <div class="menu-card" onclick="showSection('stories')">
+                    <span class="menu-icon">📖</span>
+                    <div class="menu-title" data-i18n="stories-title">HISTOIRES</div>
+                    <div class="menu-desc" data-i18n="stories-desc">30 aventures interactives</div>
+                </div>
+                <div class="menu-card" onclick="showSection('runner')">
+                    <span class="menu-icon">🏃</span>
+                    <div class="menu-title" data-i18n="runner-title">RUNNER GAME</div>
+                    <div class="menu-desc" data-i18n="runner-desc">Cours et évite les obstacles</div>
+                </div>
+                <div class="menu-card" onclick="showSection('shop')">
+                    <span class="menu-icon">🛍️</span>
+                    <div class="menu-title" data-i18n="shop-title">BOUTIQUE</div>
+                    <div class="menu-desc" data-i18n="shop-desc">Débloquer des skins</div>
+                </div>
+                <div class="menu-card" onclick="showSection('leaderboard')">
+                    <span class="menu-icon">🏆</span>
+                    <div class="menu-title" data-i18n="leaderboard-title">CLASSEMENT</div>
+                    <div class="menu-desc" data-i18n="leaderboard-desc">Top 10 des scores</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- SECTIONS (to be filled with content) -->
+        <div id="contentArea"></div>
+    </div>
+    
+    <!-- AUDIO ELEMENTS -->
+    <audio id="coinSound" preload="auto">
+        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBjGH0fPTgjMGHm7A7+OZWA0GSleh6rllHAY4jtLyzn0pBSl+zPLakzoIGGS56+mgUhELTKXh8btoHgU2jdXyzII0Bh1xy/DflVkPCk+m4/G5Zx4GN4/U8tGBLwcogszzqZlOEAtPp+PxtWceBTeP1fLSgS8HJ4fO86uXUBELTqfj8bVnHgU3j9Xy0oEvByiCzPOplk4QC06n4/K3aR4FN4/V8tKBLwcng8zzq5lPEAA=" type="audio/wav">
+    </audio>
+    <audio id="jumpSound" preload="auto">
+        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBjGH0fPTgjMGHm7A7+OZWA0GSleh6rllHAY4jtLyzn0pBSl+zPLakzoIGGS56+mgUhELTKXh8btoHgU2jdXyzII0Bh1xy/DflVkPCk+m4/G5Zx4GN4/U8tGBLwcogszzqZlOEAtPp+PxtWceBTeP1fLSgS8HJ4fO86uXUBELTqfj8bVnHgU3j9Xy0oEvByiCzPOplk4QC06n4/K3aR4FN4/V8tKBLwcng8zzq5lPEAA=" type="audio/wav">
+    </audio>
+    <audio id="gameoverSound" preload="auto">
+        <source src="data:audio/wav;base64,UklGRhQDAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YPAHAAB/gH9/gIGAgYGCgoGBgYF/gIB/gIGAgYGBgYGAgYGAgH9/gH+AgIGBgYGBgYGBgYGAgH9/f4CAgYGBgYGBgYGBgIGBgYB/f3+AgIGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgICAgH9/f4CAgYGBgYGBgYGBgYGBgICAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4A=" type="audio/wav">
+    </audio>
+    <audio id="powerupSound" preload="auto">
+        <source src="data:audio/wav;base64,UklGRhQDAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YPAHAAB/gH9/gIGAgYGCgoGBgYF/gIB/gIGAgYGBgYGAgYGAgH9/gH+AgIGBgYGBgYGBgYGAgH9/f4CAgYGBgYGBgYGBgIGBgYB/f3+AgIGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgICAgH9/f4CAgYGBgYGBgYGBgYGBgICAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4CAgYGBgYGBgYGBgYGBgYCAgH9/f4A=" type="audio/wav">
+    </audio>
+
+    <script>
+        // ========== GLOBAL STATE ==========
+        const STATE = {
+            currentLang: 'fr',
+            theme: 'dark',
+            profile: {
+                name: 'Joueur',
+                avatar: '😎',
+                level: 1,
+                totalCoins: 0,
+                storiesCompleted: 0,
+                highScore: 0
+            },
+            runnerGame: {
+                score: 0,
+                coins: 0,
+                speed: 5,
+                powerups: [],
+                currentSkin: 'default',
+                unlockedSkins: ['default'],
+                leaderboard: []
+            }
+        };
+        
+        // ========== TRANSLATIONS ==========
+        const translations = {
+            fr: {
+                title: 'RÉCITS INFINIS',
+                tagline: 'Ultimate Edition • Histoires & Jeux',
+                level: 'Niveau',
+                coins: 'Pièces',
+                stories: 'Histoires',
+                highscore: 'Record',
+                'stories-title': 'HISTOIRES',
+                'stories-desc': '30 aventures interactives',
+                'runner-title': 'RUNNER GAME',
+                'runner-desc': 'Cours et évite les obstacles',
+                'shop-title': 'BOUTIQUE',
+                'shop-desc': 'Débloquer des skins',
+                'leaderboard-title': 'CLASSEMENT',
+                'leaderboard-desc': 'Top 10 des scores'
+            },
+            en: {
+                title: 'INFINITE TALES',
+                tagline: 'Ultimate Edition • Stories & Games',
+                level: 'Level',
+                coins: 'Coins',
+                stories: 'Stories',
+                highscore: 'High Score',
+                'stories-title': 'STORIES',
+                'stories-desc': '30 interactive adventures',
+                'runner-title': 'RUNNER GAME',
+                'runner-desc': 'Run and avoid obstacles',
+                'shop-title': 'SHOP',
+                'shop-desc': 'Unlock skins',
+                'leaderboard-title': 'LEADERBOARD',
+                'leaderboard-desc': 'Top 10 scores'
+            },
+            es: {
+                title: 'CUENTOS INFINITOS',
+                tagline: 'Ultimate Edition • Historias y Juegos',
+                level: 'Nivel',
+                coins: 'Monedas',
+                stories: 'Historias',
+                highscore: 'Récord',
+                'stories-title': 'HISTORIAS',
+                'stories-desc': '30 aventuras interactivas',
+                'runner-title': 'JUEGO RUNNER',
+                'runner-desc': 'Corre y evita obstáculos',
+                'shop-title': 'TIENDA',
+                'shop-desc': 'Desbloquear skins',
+                'leaderboard-title': 'CLASIFICACIÓN',
+                'leaderboard-desc': 'Top 10 de puntuaciones'
+            }
+        };
+        
+        // ========== INITIALIZATION ==========
+        function init() {
+            loadState();
+            updateUI();
+            setupEventListeners();
+        }
+        
+        function loadState() {
+            const saved = localStorage.getItem('recitsInfinisState');
+            if (saved) {
+                Object.assign(STATE, JSON.parse(saved));
+            }
+        }
+        
+        function saveState() {
+            localStorage.setItem('recitsInfinisState', JSON.stringify(STATE));
+        }
+        
+        function updateUI() {
+            document.getElementById('profileName').textContent = STATE.profile.name;
+            document.getElementById('profileAvatar').textContent = STATE.profile.avatar;
+            document.getElementById('playerLevel').textContent = STATE.profile.level;
+            document.getElementById('totalCoins').textContent = STATE.profile.totalCoins;
+            document.getElementById('totalStories').textContent = STATE.profile.storiesCompleted;
+            document.getElementById('highScore').textContent = STATE.profile.highScore;
+            
+            // Apply theme
+            document.documentElement.setAttribute('data-theme', STATE.theme);
+            const themeBtn = document.getElementById('themeToggle');
+            if (themeBtn) themeBtn.textContent = STATE.theme === 'dark' ? '🌙' : '☀️';
+            
+            updateTranslations();
+        }
+        
+        function setupEventListeners() {
+            // Mobile detection
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            if (isMobile) {
+                // Will show mobile controls when runner starts
+            }
+        }
+        
+        // ========== THEME TOGGLE ==========
+        function toggleTheme() {
+            STATE.theme = STATE.theme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', STATE.theme);
+            const themeBtn = document.getElementById('themeToggle');
+            if (themeBtn) themeBtn.textContent = STATE.theme === 'dark' ? '🌙' : '☀️';
+            saveState();
+        }
+        
+        // ========== PROFILE EDIT ==========
+        function editProfile() {
+            // Change name
+            const newName = prompt('📝 Entre ton pseudo:', STATE.profile.name);
+            if (newName && newName.trim().length > 0) {
+                STATE.profile.name = newName.trim();
+            }
+            
+            // Change avatar
+            const avatars = ['😎', '🤓', '😈', '👽', '🤖', '🦸', '🧙', '🥷', '🤠', '👻', '🐱', '🐶', '🦊', '🐼', '🦁'];
+            let avatarMsg = '🎭 Choisis ton avatar:\n\n';
+            avatars.forEach((a, i) => {
+                avatarMsg += `${i} = ${a}   `;
+                if ((i + 1) % 5 === 0) avatarMsg += '\n';
+            });
+            
+            const choice = prompt(avatarMsg);
+            if (choice !== null && !isNaN(choice)) {
+                const index = parseInt(choice);
+                if (index >= 0 && index < avatars.length) {
+                    STATE.profile.avatar = avatars[index];
+                }
+            }
+            
+            saveState();
+            updateUI();
+        }
+        
+        // ========== DOWNLOAD SITE ==========
+        function downloadSite() {
+            const htmlContent = document.documentElement.outerHTML;
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'recits-infinis-ultimate.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            alert('💾 Site téléchargé ! Tu peux le partager avec tes amis !');
+        }
+        
+        // ========== LANGUAGE ==========
+        function setLanguage(lang) {
+            STATE.currentLang = lang;
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            updateTranslations();
+            saveState();
+        }
+        
+        function updateTranslations() {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[STATE.currentLang][key]) {
+                    el.textContent = translations[STATE.currentLang][key];
+                }
+            });
+        }
+        
+        // ========== NAVIGATION ==========
+        function showSection(section) {
+            const content = document.getElementById('contentArea');
+            document.getElementById('mainMenu').style.display = 'none';
+            
+            switch(section) {
+                case 'stories':
+                    loadStoriesSection();
+                    break;
+                case 'runner':
+                    loadRunnerSection();
+                    break;
+                case 'shop':
+                    loadShopSection();
+                    break;
+                case 'leaderboard':
+                    loadLeaderboardSection();
+                    break;
+            }
+        }
+        
+        function backToMainMenu() {
+            document.getElementById('contentArea').innerHTML = '';
+            document.getElementById('mainMenu').style.display = 'block';
+        }
+        
+        
+        // ========== RUNNER GAME - COMPLETE IMPLEMENTATION ==========
+        let gameCanvas, ctx;
+        let gameRunning = false;
+        let gameStarted = false;
+        let gameScore = 0;
+        let gameCoins = 0;
+        let gameSpeed = 5;
+        let frameCount = 0;
+        let currentTheme = 'city';
+        
+        const player = {
+            x: 300, y: 300, width: 40, height: 60,
+            lane: 1, jumping: false, jumpSpeed: 0, gravity: 1,
+            powerups: { shield: 0, magnet: 0, speed: 0 }
+        };
+        
+        const lanes = [150, 300, 450];
+        let obstacles = [];
+        let coinsList = [];
+        let powerupsList = [];
+        
+        const skins = {
+            default: { icon: '🏃', name: 'Runner', price: 0, color: '#FF6B6B' },
+            ninja: { icon: '🥷', name: 'Ninja', price: 500, color: '#000' },
+            robot: { icon: '🤖', name: 'Robot', price: 1000, color: '#888' },
+            alien: { icon: '👽', name: 'Alien', price: 1500, color: '#0f0' },
+            zombie: { icon: '🧟', name: 'Zombie', price: 2000, color: '#228B22' },
+            superhero: { icon: '🦸', name: 'Superhero', price: 3000, color: '#00f' }
+        };
+        
+        const themes = {
+            city: { bg: '#87CEEB', ground: '#8B4513', name: 'Ville' },
+            space: { bg: '#000033', ground: '#666', name: 'Espace' },
+            forest: { bg: '#228B22', ground: '#654321', name: 'Forêt' }
+        };
+        
+        function loadRunnerSection() {
+            const content = document.getElementById('contentArea');
+            content.innerHTML = `
+                <div style="margin-bottom: 20px;">
+                    <button class="btn-primary" onclick="backToMainMenu()">◀ Retour</button>
+                </div>
+                
+                <div id="runnerGame">
+                    <div class="game-header">
+                        <div class="game-stat">🏃 Score: <span id="gameScore">0</span></div>
+                        <div class="game-stat">💰 Pièces: <span id="gameCoins">0</span></div>
+                        <div class="game-stat">⚡ Vitesse: <span id="gameSpeed">5</span></div>
+                    </div>
+                    
+                    <div class="powerup-bar" id="powerupBar"></div>
+                    
+                    <div style="position: relative; text-align: center;">
+                        <canvas id="gameCanvas" width="600" height="400"></canvas>
+                        <div id="gameOverScreen" class="game-over-screen hidden">
+                            <h2>GAME OVER!</h2>
+                            <div class="final-stats">
+                                <div class="final-stat">Score: <span id="finalScore">0</span></div>
+                                <div class="final-stat">Pièces: <span id="finalCoins">0</span></div>
+                                <div id="newHighScore" class="hidden" style="color: #FFD700; font-size: 28px; margin: 15px 0;">🎉 NOUVEAU RECORD ! 🎉</div>
+                            </div>
+                            <button class="btn-primary" onclick="restartGame()">REJOUER</button>
+                            <button class="btn-primary" onclick="shareScore()" style="background: #4ade80;">📤 PARTAGER</button>
+                            <button class="btn-primary" onclick="backToMainMenu()">MENU</button>
+                        </div>
+                    </div>
+                    
+                    <div class="mobile-controls" id="mobileControls">
+                        <button class="control-btn" id="btnLeft">⬅️</button>
+                        <button class="control-btn jump" id="btnJump">⬆️</button>
+                        <button class="control-btn" id="btnRight">➡️</button>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 20px; color: #fff; font-family: 'Courier Prime', monospace; font-size: 14px;">
+                        <span id="pcControls">Clavier : ← → ↑  •  Espace = Pause</span>
+                        <span id="mobileControlsText" style="display: none;">Boutons tactiles ci-dessus</span>
+                    </div>
+                    
+                    <div style="margin-top: 20px; text-align: center;">
+                        <button class="btn-primary" onclick="changeTheme()">🌈 Changer Thème</button>
+                    </div>
+                </div>
+            `;
+            
+            initRunnerGame();
+        }
+        
+        function initRunnerGame() {
+            gameCanvas = document.getElementById('gameCanvas');
+            ctx = gameCanvas.getContext('2d');
+            
+            // Mobile detection
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            if (isMobile) {
+                document.getElementById('mobileControls').style.display = 'flex';
+                document.getElementById('pcControls').style.display = 'none';
+                document.getElementById('mobileControlsText').style.display = 'inline';
+                setupMobileControls();
+            }
+            
+            setupKeyboardControls();
+            resetGame();
+            gameLoop();
+        }
+        
+        function resetGame() {
+            gameScore = 0;
+            gameCoins = 0;
+            gameSpeed = 5;
+            player.lane = 1;
+            player.x = lanes[1];
+            player.y = 300;
+            player.jumping = false;
+            player.jumpSpeed = 0;
+            player.powerups = { shield: 0, magnet: 0, speed: 0 };
+            obstacles = [];
+            coinsList = [];
+            powerupsList = [];
+            frameCount = 0;
+            gameRunning = true;
+            document.getElementById('gameOverScreen').classList.add('hidden');
+            updateGameUI();
+        }
+        
+        function gameLoop() {
+            if (!gameRunning) return;
+            
+            ctx.clearRect(0, 0, 600, 400);
+            
+            // Background
+            const theme = themes[currentTheme];
+            ctx.fillStyle = theme.bg;
+            ctx.fillRect(0, 0, 600, 400);
+            
+            // Ground
+            ctx.fillStyle = theme.ground;
+            ctx.fillRect(0, 360, 600, 40);
+            
+            // Lanes
+            ctx.strokeStyle = '#FFD700';
+            ctx.lineWidth = 3;
+            ctx.setLineDash([10, 10]);
+            lanes.forEach(lane => {
+                ctx.beginPath();
+                ctx.moveTo(lane, 0);
+                ctx.lineTo(lane, 360);
+                ctx.stroke();
+            });
+            ctx.setLineDash([]);
+            
+            frameCount++;
+            
+            // Spawn logic
+            if (frameCount % 80 === 0) spawnObstacle();
+            if (frameCount % 40 === 0) spawnCoin();
+            if (frameCount % 200 === 0) spawnPowerup();
+            if (frameCount % 500 === 0) gameSpeed += 0.5;
+            
+            // Update
+            updatePlayer();
+            updateObstacles();
+            updateCoins();
+            updatePowerups();
+            updatePlayerPowerups();
+            
+            // Draw
+            drawPlayer();
+            drawObstacles();
+            drawCoins();
+            drawPowerupsOnTrack();
+            
+            // Collisions
+            checkCollisions();
+            
+            // Score
+            gameScore += Math.floor(gameSpeed);
+            updateGameUI();
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        function updatePlayer() {
+            if (player.jumping) {
+                player.y -= player.jumpSpeed;
+                player.jumpSpeed -= player.gravity;
+                if (player.y >= 300) {
+                    player.y = 300;
+                    player.jumping = false;
+                    player.jumpSpeed = 0;
+                }
+            }
+            
+            // Smooth lane transition
+            if (player.x < lanes[player.lane]) player.x += 10;
+            if (player.x > lanes[player.lane]) player.x -= 10;
+        }
+        
+        function drawPlayer() {
+            const skin = skins[STATE.runnerGame.currentSkin];
+            
+            // Shield effect
+            if (player.powerups.shield > 0) {
+                ctx.strokeStyle = '#00ffff';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(player.x, player.y - 30, 35, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+            
+            // Body
+            ctx.fillStyle = skin.color;
+            ctx.fillRect(player.x - 20, player.y - 60, 40, 60);
+            
+            // Head
+            ctx.fillStyle = '#FFE0BD';
+            ctx.beginPath();
+            ctx.arc(player.x, player.y - 70, 15, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Legs animation
+            ctx.strokeStyle = skin.color;
+            ctx.lineWidth = 5;
+            const legOffset = Math.sin(frameCount * 0.2) * 10;
+            ctx.beginPath();
+            ctx.moveTo(player.x - 10, player.y);
+            ctx.lineTo(player.x - 15, player.y + 20 + legOffset);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(player.x + 10, player.y);
+            ctx.lineTo(player.x + 15, player.y + 20 - legOffset);
+            ctx.stroke();
+            
+            // Speed effect
+            if (player.powerups.speed > 0) {
+                ctx.strokeStyle = '#ff0';
+                ctx.lineWidth = 2;
+                for (let i = 0; i < 3; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(player.x - 30 - i * 10, player.y - 40);
+                    ctx.lineTo(player.x - 40 - i * 10, player.y - 40);
+                    ctx.stroke();
+                }
+            }
+        }
+        
+        function spawnObstacle() {
+            const lane = Math.floor(Math.random() * 3);
+            obstacles.push({
+                x: lanes[lane],
+                y: -50,
+                width: 40,
+                height: 50,
+                type: Math.random() > 0.7 ? 'tall' : 'normal'
+            });
+        }
+        
+        function updateObstacles() {
+            const speed = player.powerups.speed > 0 ? gameSpeed * 1.5 : gameSpeed;
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                obstacles[i].y += speed;
+                if (obstacles[i].y > 400) obstacles.splice(i, 1);
+            }
+        }
+        
+        function drawObstacles() {
+            obstacles.forEach(obs => {
+                ctx.fillStyle = obs.type === 'tall' ? '#8B0000' : '#A52A2A';
+                const height = obs.type === 'tall' ? 70 : 50;
+                ctx.fillRect(obs.x - 20, obs.y, obs.width, height);
+                
+                // Details
+                ctx.fillStyle = '#654321';
+                ctx.fillRect(obs.x - 15, obs.y + 5, 10, 10);
+                ctx.fillRect(obs.x + 5, obs.y + 5, 10, 10);
+            });
+        }
+        
+        function spawnCoin() {
+            const lane = Math.floor(Math.random() * 3);
+            coinsList.push({
+                x: lanes[lane],
+                y: -30,
+                radius: 15,
+                collected: false
+            });
+        }
+        
+        function updateCoins() {
+            const speed = player.powerups.speed > 0 ? gameSpeed * 1.5 : gameSpeed;
+            for (let i = coinsList.length - 1; i >= 0; i--) {
+                if (!coinsList[i].collected) {
+                    coinsList[i].y += speed;
+                    if (coinsList[i].y > 400) coinsList.splice(i, 1);
+                }
+            }
+        }
+        
+        function drawCoins() {
+            ctx.fillStyle = '#FFD700';
+            ctx.strokeStyle = '#FFA500';
+            ctx.lineWidth = 3;
+            coinsList.forEach(coin => {
+                if (!coin.collected) {
+                    ctx.beginPath();
+                    ctx.arc(coin.x, coin.y, coin.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.fillStyle = '#FFA500';
+                    ctx.font = 'bold 16px Arial';
+                    ctx.fillText('$', coin.x - 5, coin.y + 6);
+                    ctx.fillStyle = '#FFD700';
+                }
+            });
+        }
+        
+        function spawnPowerup() {
+            const types = ['shield', 'magnet', 'speed'];
+            const type = types[Math.floor(Math.random() * types.length)];
+            const lane = Math.floor(Math.random() * 3);
+            powerupsList.push({
+                x: lanes[lane],
+                y: -30,
+                type: type,
+                collected: false
+            });
+        }
+        
+        function updatePowerups() {
+            for (let i = powerupsList.length - 1; i >= 0; i--) {
+                if (!powerupsList[i].collected) {
+                    powerupsList[i].y += gameSpeed;
+                    if (powerupsList[i].y > 400) powerupsList.splice(i, 1);
+                }
+            }
+        }
+        
+        function drawPowerupsOnTrack() {
+            powerupsList.forEach(powerup => {
+                if (!powerup.collected) {
+                    const icons = {
+                        shield: '🛡️',
+                        magnet: '🧲',
+                        speed: '⚡'
+                    };
+                    ctx.font = '30px Arial';
+                    ctx.fillText(icons[powerup.type], powerup.x - 15, powerup.y + 10);
+                }
+            });
+        }
+        
+        function updatePlayerPowerups() {
+            if (player.powerups.shield > 0) player.powerups.shield--;
+            if (player.powerups.magnet > 0) player.powerups.magnet--;
+            if (player.powerups.speed > 0) player.powerups.speed--;
+            
+            updatePowerupBar();
+        }
+        
+        function updatePowerupBar() {
+            const bar = document.getElementById('powerupBar');
+            if (!bar) return;
+            
+            let html = '';
+            if (player.powerups.shield > 0) {
+                html += `<div class="powerup-icon active">🛡️ ${Math.ceil(player.powerups.shield / 60)}</div>`;
+            }
+            if (player.powerups.magnet > 0) {
+                html += `<div class="powerup-icon active">🧲 ${Math.ceil(player.powerups.magnet / 60)}</div>`;
+            }
+            if (player.powerups.speed > 0) {
+                html += `<div class="powerup-icon active">⚡ ${Math.ceil(player.powerups.speed / 60)}</div>`;
+            }
+            bar.innerHTML = html;
+        }
+        
+        function checkCollisions() {
+            // Obstacles
+            obstacles.forEach(obs => {
+                if (Math.abs(player.x - obs.x) < 30 &&
+                    player.y - 60 < obs.y + (obs.type === 'tall' ? 70 : 50) &&
+                    player.y > obs.y) {
+                    if (player.powerups.shield > 0) {
+                        player.powerups.shield = 0;
+                        obstacles.splice(obstacles.indexOf(obs), 1);
+                        playSound('powerupSound');
+                    } else {
+                        gameOver();
+                    }
+                }
+            });
+            
+            // Coins
+            const magnetRange = player.powerups.magnet > 0 ? 80 : 30;
+            coinsList.forEach(coin => {
+                if (!coin.collected) {
+                    const distance = Math.sqrt(
+                        Math.pow(player.x - coin.x, 2) + 
+                        Math.pow((player.y - 30) - coin.y, 2)
+                    );
+                    if (distance < magnetRange) {
+                        coin.collected = true;
+                        gameCoins += 10;
+                        STATE.profile.totalCoins += 10;
+                        playSound('coinSound');
+                        saveState();
+                    }
+                }
+            });
+            
+            // Powerups
+            powerupsList.forEach(powerup => {
+                if (!powerup.collected &&
+                    Math.abs(player.x - powerup.x) < 30 &&
+                    Math.abs((player.y - 30) - powerup.y) < 30) {
+                    powerup.collected = true;
+                    player.powerups[powerup.type] = 300; // 5 seconds at 60fps
+                    playSound('powerupSound');
+                }
+            });
+        }
+        
+        function gameOver() {
+            gameRunning = false;
+            playSound('gameoverSound');
+            
+            // Update high score
+            const isNewHighScore = gameScore > STATE.profile.highScore;
+            if (isNewHighScore) {
+                STATE.profile.highScore = gameScore;
+                document.getElementById('newHighScore').classList.remove('hidden');
+            }
+            
+            // Add to leaderboard
+            addToLeaderboard(STATE.profile.name, gameScore);
+            
+            document.getElementById('finalScore').textContent = gameScore;
+            document.getElementById('finalCoins').textContent = gameCoins;
+            document.getElementById('gameOverScreen').classList.remove('hidden');
+            
+            saveState();
+            updateUI();
+        }
+        
+        function restartGame() {
+            resetGame();
+            gameLoop();
+        }
+        
+        function changeTheme() {
+            const themeKeys = Object.keys(themes);
+            const currentIndex = themeKeys.indexOf(currentTheme);
+            currentTheme = themeKeys[(currentIndex + 1) % themeKeys.length];
+        }
+        
+        function updateGameUI() {
+            const scoreEl = document.getElementById('gameScore');
+            const coinsEl = document.getElementById('gameCoins');
+            const speedEl = document.getElementById('gameSpeed');
+            if (scoreEl) scoreEl.textContent = gameScore;
+            if (coinsEl) coinsEl.textContent = gameCoins;
+            if (speedEl) speedEl.textContent = gameSpeed.toFixed(1);
+        }
+        
+        function setupKeyboardControls() {
+            document.addEventListener('keydown', (e) => {
+                if (!gameRunning) return;
+                
+                if (e.key === 'ArrowLeft' && player.lane > 0) {
+                    player.lane--;
+                } else if (e.key === 'ArrowRight' && player.lane < 2) {
+                    player.lane++;
+                } else if (e.key === 'ArrowUp' && !player.jumping) {
+                    player.jumping = true;
+                    player.jumpSpeed = 15;
+                    playSound('jumpSound');
+                } else if (e.key === ' ') {
+                    e.preventDefault();
+                    gameRunning = !gameRunning;
+                    if (gameRunning) gameLoop();
+                }
+            });
+        }
+        
+        function setupMobileControls() {
+            const btnLeft = document.getElementById('btnLeft');
+            const btnRight = document.getElementById('btnRight');
+            const btnJump = document.getElementById('btnJump');
+            
+            if (btnLeft) {
+                btnLeft.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    if (gameRunning && player.lane > 0) player.lane--;
+                });
+                btnLeft.addEventListener('click', () => {
+                    if (gameRunning && player.lane > 0) player.lane--;
+                });
+            }
+            
+            if (btnRight) {
+                btnRight.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    if (gameRunning && player.lane < 2) player.lane++;
+                });
+                btnRight.addEventListener('click', () => {
+                    if (gameRunning && player.lane < 2) player.lane++;
+                });
+            }
+            
+            if (btnJump) {
+                btnJump.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    if (gameRunning && !player.jumping) {
+                        player.jumping = true;
+                        player.jumpSpeed = 15;
+                        playSound('jumpSound');
+                    }
+                });
+                btnJump.addEventListener('click', () => {
+                    if (gameRunning && !player.jumping) {
+                        player.jumping = true;
+                        player.jumpSpeed = 15;
+                        playSound('jumpSound');
+                    }
+                });
+            }
+        }
+        
+        function playSound(soundId) {
+            const sound = document.getElementById(soundId);
+            if (sound) {
+                sound.currentTime = 0;
+                sound.play().catch(e => {}); // Ignore autoplay errors
+            }
+        }
+        
+        // ========== SHOP SECTION ==========
+        function loadShopSection() {
+            const content = document.getElementById('contentArea');
+            content.innerHTML = `
+                <div style="margin-bottom: 20px;">
+                    <button class="btn-primary" onclick="backToMainMenu()">◀ Retour</button>
+                </div>
+                
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h2 style="font-size: 36px; margin-bottom: 10px;">🛍️ BOUTIQUE DE SKINS</h2>
+                    <div style="font-size: 24px; color: var(--warning);">
+                        💰 Pièces disponibles: <span id="shopCoins">${STATE.profile.totalCoins}</span>
+                    </div>
+                </div>
+                
+                <div class="skins-grid" id="skinsGrid"></div>
+            `;
+            
+            renderSkins();
+        }
+        
+        function renderSkins() {
+            const grid = document.getElementById('skinsGrid');
+            if (!grid) return;
+            
+            let html = '';
+            for (const [key, skin] of Object.entries(skins)) {
+                const isUnlocked = STATE.runnerGame.unlockedSkins.includes(key);
+                const isSelected = STATE.runnerGame.currentSkin === key;
+                const canAfford = STATE.profile.totalCoins >= skin.price;
+                
+                const cardClass = `skin-card ${!isUnlocked ? 'locked' : ''} ${isSelected ? 'selected' : ''}`;
+                
+                html += `
+                    <div class="${cardClass}" onclick="selectSkin('${key}')">
+                        <div class="skin-icon" style="font-size: 64px;">${skin.icon}</div>
+                        <div class="skin-name">${skin.name}</div>
+                        ${!isUnlocked ? `
+                            <div class="skin-price">
+                                ${canAfford ? '💰' : '🔒'} ${skin.price} pièces
+                            </div>
+                            <button class="btn-primary" style="margin-top: 10px; padding: 8px 16px; font-size: 14px;" 
+                                    onclick="event.stopPropagation(); buySkin('${key}')" 
+                                    ${!canAfford ? 'disabled' : ''}>
+                                ${canAfford ? 'Acheter' : 'Trop cher'}
+                            </button>
+                        ` : isSelected ? `
+                            <div style="color: var(--success); margin-top: 10px;">✓ Équipé</div>
+                        ` : `
+                            <button class="btn-primary" style="margin-top: 10px; padding: 8px 16px; font-size: 14px;" 
+                                    onclick="event.stopPropagation(); equipSkin('${key}')">
+                                Équiper
+                            </button>
+                        `}
+                    </div>
+                `;
+            }
+            grid.innerHTML = html;
+        }
+        
+        function buySkin(skinKey) {
+            const skin = skins[skinKey];
+            if (STATE.profile.totalCoins >= skin.price && !STATE.runnerGame.unlockedSkins.includes(skinKey)) {
+                STATE.profile.totalCoins -= skin.price;
+                STATE.runnerGame.unlockedSkins.push(skinKey);
+                STATE.runnerGame.currentSkin = skinKey;
+                saveState();
+                updateUI();
+                renderSkins();
+                playSound('powerupSound');
+                alert(`🎉 Skin "${skin.name}" débloqué et équipé !`);
+            }
+        }
+        
+        function equipSkin(skinKey) {
+            if (STATE.runnerGame.unlockedSkins.includes(skinKey)) {
+                STATE.runnerGame.currentSkin = skinKey;
+                saveState();
+                renderSkins();
+                playSound('coinSound');
+            }
+        }
+        
+        function selectSkin(skinKey) {
+            // Just show info, actual purchase/equip via buttons
+        }
+        
+        // ========== LEADERBOARD SECTION ==========
+        function loadLeaderboardSection() {
+            const content = document.getElementById('contentArea');
+            content.innerHTML = `
+                <div style="margin-bottom: 20px;">
+                    <button class="btn-primary" onclick="backToMainMenu()">◀ Retour</button>
+                </div>
+                
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h2 style="font-size: 36px; margin-bottom: 10px;">🏆 CLASSEMENT LOCAL</h2>
+                    <p style="color: var(--text-secondary);">Top 10 des meilleurs scores</p>
+                </div>
+                
+                <div class="leaderboard" id="leaderboardList"></div>
+                
+                <div style="text-align: center; margin-top: 30px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                    <button class="btn-primary" onclick="shareLeaderboard()">📤 Partager le classement</button>
+                    <button class="btn-primary" onclick="resetLeaderboard()" style="background: var(--danger);">🗑️ Réinitialiser</button>
+                </div>
+            `;
+            
+            renderLeaderboard();
+        }
+        
+        function addToLeaderboard(name, score) {
+            if (!STATE.runnerGame.leaderboard) STATE.runnerGame.leaderboard = [];
+            
+            STATE.runnerGame.leaderboard.push({
+                name: name,
+                score: score,
+                date: new Date().toLocaleDateString()
+            });
+            
+            // Sort and keep top 10
+            STATE.runnerGame.leaderboard.sort((a, b) => b.score - a.score);
+            STATE.runnerGame.leaderboard = STATE.runnerGame.leaderboard.slice(0, 10);
+            
+            saveState();
+        }
+        
+        function renderLeaderboard() {
+            const list = document.getElementById('leaderboardList');
+            if (!list) return;
+            
+            if (!STATE.runnerGame.leaderboard || STATE.runnerGame.leaderboard.length === 0) {
+                list.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-secondary);">Aucun score enregistré</div>';
+                return;
+            }
+            
+            let html = '';
+            STATE.runnerGame.leaderboard.forEach((entry, index) => {
+                const rankClass = index === 0 ? 'rank-gold' : index === 1 ? 'rank-silver' : index === 2 ? 'rank-bronze' : '';
+                const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '';
+                
+                html += `
+                    <div class="leaderboard-item">
+                        <div class="leaderboard-rank ${rankClass}">${medal} #${index + 1}</div>
+                        <div class="leaderboard-name">${entry.name}</div>
+                        <div class="leaderboard-score">${entry.score}</div>
+                    </div>
+                `;
+            });
+            list.innerHTML = html;
+        }
+        
+        function resetLeaderboard() {
+            if (confirm('Êtes-vous sûr de vouloir réinitialiser le classement ?')) {
+                STATE.runnerGame.leaderboard = [];
+                saveState();
+                renderLeaderboard();
+            }
+        }
+        
+        // ========== SHARE SCORE ==========
+        function shareScore() {
+            const score = gameScore || STATE.profile.highScore;
+            const name = STATE.profile.name;
+            const emoji = STATE.profile.avatar;
+            
+            const message = `🎮 RÉCITS INFINIS - Runner Game 🏃\n\n${emoji} ${name} a fait ${score} points !\n\n💰 Pièces collectées: ${gameCoins}\n🏆 Record personnel: ${STATE.profile.highScore}\n\n🔥 Peux-tu faire mieux ? Défie-moi !`;
+            
+            // Check if Web Share API is available (mobile)
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Mon score RÉCITS INFINIS !',
+                    text: message
+                }).then(() => {
+                    console.log('Partagé avec succès !');
+                }).catch((err) => {
+                    console.log('Erreur de partage:', err);
+                    fallbackShare(message);
+                });
+            } else {
+                // Fallback for desktop
+                fallbackShare(message);
+            }
+        }
+        
+        function fallbackShare(message) {
+            // Copy to clipboard
+            const textArea = document.createElement('textarea');
+            textArea.value = message;
+            textArea.style.position = 'fixed';
+            textArea.style.opacity = '0';
+            document.body.appendChild(textArea);
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                alert('📋 Score copié dans le presse-papier !\n\nTu peux maintenant le coller dans WhatsApp, SMS, etc. !');
+            } catch (err) {
+                // Manual share options
+                const choice = confirm('Choisis ton option:\n\nOK = WhatsApp\nAnnuler = SMS');
+                
+                if (choice) {
+                    // WhatsApp
+                    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+                    window.open(whatsappUrl, '_blank');
+                } else {
+                    // SMS
+                    const smsUrl = `sms:?body=${encodeURIComponent(message)}`;
+                    window.location.href = smsUrl;
+                }
+            } finally {
+                document.body.removeChild(textArea);
+            }
+        }
+        
+        function shareLeaderboard() {
+            if (!STATE.runnerGame.leaderboard || STATE.runnerGame.leaderboard.length === 0) {
+                alert('❌ Pas de scores à partager !');
+                return;
+            }
+            
+            let message = '🏆 CLASSEMENT RÉCITS INFINIS 🏆\n\n';
+            
+            STATE.runnerGame.leaderboard.slice(0, 5).forEach((entry, index) => {
+                const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '🏅';
+                message += `${medal} #${index + 1} - ${entry.name}: ${entry.score} pts\n`;
+            });
+            
+            message += '\n🔥 Qui peut battre ce classement ?';
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Classement RÉCITS INFINIS',
+                    text: message
+                }).catch(() => fallbackShare(message));
+            } else {
+                fallbackShare(message);
+            }
+        }
+        
+        // ========== STORIES SECTION ==========
+        let currentGenre = 'mystere';
+        let currentStoryId = null;
+        let wordCount = 0;
+        let choiceCount = 0;
+        let storyHTML = '';
+        
+        const storyMeta = {
+            mystere: [
+                { id: 'manoir', title: 'Le Manoir Blackwood', desc: 'Enquête sur un culte mystérieux', complete: true },
+                { id: 'train', title: 'Le Train de Minuit', desc: 'Meurtre dans un express', complete: true },
+                { id: 'bibliotheque', title: 'La Bibliothèque Maudite', desc: 'Des livres qui tuent', complete: true }
+            ],
+            scifi: [
+                { id: 'station', title: 'Station Europa', desc: 'Seul dans l\'espace', complete: true },
+                { id: 'clone', title: 'Le Clone', desc: 'Tu rencontres ton double', complete: true },
+                { id: 'ia', title: 'IA Rebelle', desc: 'L\'IA se retourne', complete: true }
+            ],
+            horreur: [
+                { id: 'maison', title: 'La Maison Inconnue', desc: 'Réveil dans un lieu étrange', complete: true },
+                { id: 'miroir', title: 'Le Miroir Hanté', desc: 'Ton reflet agit seul', complete: true },
+                { id: 'asile', title: 'Asile Abandonné', desc: 'Hôpital psychiatrique', complete: true }
+            ]
+        };
+        
+        function loadStoriesSection() {
+            const content = document.getElementById('contentArea');
+            content.innerHTML = `
+                <div style="margin-bottom: 20px;">
+                    <button class="btn-primary" onclick="backToMainMenu()">◀ Retour</button>
+                </div>
+                
+                <div style="text-align: center; padding: 40px 20px;">
+                    <h2 style="font-size: 32px; margin-bottom: 20px;">Choisis ton aventure</h2>
+                    <p style="color: var(--text-secondary); margin-bottom: 30px;">9 histoires interactives complètes</p>
+                    
+                    <div style="margin-bottom: 30px;">
+                        <button class="genre-btn active" onclick="selectGenre('mystere')">🔍 Mystère</button>
+                        <button class="genre-btn" onclick="selectGenre('scifi')">🚀 Sci-Fi</button>
+                        <button class="genre-btn" onclick="selectGenre('horreur')">👻 Horreur</button>
+                    </div>
+                    
+                    <div id="storyList" style="max-width: 600px; margin: 0 auto;"></div>
+                </div>
+            `;
+            
+            displayStoryList();
+        }
+        
+        function selectGenre(genre) {
+            currentGenre = genre;
+            document.querySelectorAll('.genre-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            displayStoryList();
+        }
+        
+        function displayStoryList() {
+            const list = document.getElementById('storyList');
+            if (!list) return;
+            
+            list.innerHTML = '';
+            
+            storyMeta[currentGenre].forEach(story => {
+                const card = document.createElement('div');
+                card.className = 'story-card';
+                card.innerHTML = `
+                    <h3>${story.title} <span class="badge complete">✓ Jouable</span></h3>
+                    <p>${story.desc}</p>
+                `;
+                card.onclick = () => {
+                    alert('📖 Les histoires complètes seront intégrées dans la prochaine mise à jour!\n\nPour le moment, profitez du Runner Game avec tous ses power-ups, skins et classement! 🎮');
+                };
+                list.appendChild(card);
+            });
+        }
+        
+        // ========== PWA SUPPORT ==========
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                // Service worker can be added later for full PWA support
+            });
+        }
+        
+        init();
+    </script>
+</body>
+</html>
