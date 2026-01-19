@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#1a1a1a">
     <link rel="manifest" href="manifest.json">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <title>RÉCITS INFINIS - Ultimate Edition</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,700;1,400&family=Courier+Prime&display=swap');
@@ -662,7 +663,7 @@
                     <button class="lang-btn" onclick="setLanguage('es')">🇪🇸</button>
                 </div>
                 <button class="icon-btn" id="themeToggle" onclick="toggleTheme()" title="Changer le thème">🌙</button>
-                <button class="icon-btn" onclick="editProfile()" title="Éditer profil">👤</button>
+                <button class="icon-btn" onclick="currentUser ? editProfile() : showLoginModal()" title="Connexion / Profil">👤</button>
                 <button class="icon-btn" onclick="downloadSite()" title="Télécharger le site">💾</button>
             </div>
         </div>
@@ -742,6 +743,13 @@
     </audio>
 
     <script>
+        // ========== SUPABASE CONFIGURATION ==========
+        const SUPABASE_URL = 'https://wsxqgtzyhglmeddybzgn.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_ix9Cb9aP0eDcvreT2fX1jg_DqWqZHjS';
+        
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        let currentUser = null;
+        
         // ========== GLOBAL STATE ==========
         const STATE = {
             currentLang: 'fr',
@@ -833,6 +841,9 @@
         
         function saveState() {
             localStorage.setItem('recitsInfinisState', JSON.stringify(STATE));
+            if (currentUser) {
+                syncToSupabase();
+            }
         }
         
         function updateUI() {
@@ -873,6 +884,114 @@
             const themeBtn = document.getElementById('themeToggle');
             if (themeBtn) themeBtn.textContent = STATE.theme === 'dark' ? '🌙' : '☀️';
             saveState();
+        }
+        
+        // ========== SUPABASE LOGIN/SYNC ==========
+        async function showLoginModal() {
+            const email = prompt('📧 Entre ton email:');
+            if (!email || !email.includes('@')) {
+                alert('❌ Email invalide !');
+                return;
+            }
+            
+            const username = prompt('👤 Choisis ton pseudo:');
+            if (!username || username.trim().length === 0) {
+                alert('❌ Pseudo invalide !');
+                return;
+            }
+            
+            await loginOrRegister(email.trim(), username.trim());
+        }
+        
+        async function loginOrRegister(email, username) {
+            try {
+                const { data: existingUser, error: fetchError } = await supabaseClient
+                    .from('users')
+                    .select('*')
+                    .eq('email', email)
+                    .single();
+                
+                if (existingUser) {
+                    currentUser = existingUser;
+                    STATE.profile = {
+                        name: existingUser.username,
+                        avatar: existingUser.avatar,
+                        level: existingUser.level,
+                        totalCoins: existingUser.total_coins,
+                        storiesCompleted: existingUser.stories_completed,
+                        highScore: existingUser.high_score
+                    };
+                    STATE.runnerGame.unlockedSkins = existingUser.unlocked_skins || ['default'];
+                    STATE.runnerGame.currentSkin = existingUser.current_skin || 'default';
+                    
+                    alert('✅ Connexion réussie ! Bienvenue ' + existingUser.username + ' !');
+                } else {
+                    const { data: newUser, error: insertError } = await supabaseClient
+                        .from('users')
+                        .insert([{
+                            email: email,
+                            username: username,
+                            avatar: '😎',
+                            level: 1,
+                            total_coins: 0,
+                            stories_completed: 0,
+                            high_score: 0,
+                            unlocked_skins: ['default'],
+                            current_skin: 'default'
+                        }])
+                        .select()
+                        .single();
+                    
+                    if (insertError) throw insertError;
+                    
+                    currentUser = newUser;
+                    STATE.profile = {
+                        name: username,
+                        avatar: '😎',
+                        level: 1,
+                        totalCoins: 0,
+                        storiesCompleted: 0,
+                        highScore: 0
+                    };
+                    STATE.runnerGame.unlockedSkins = ['default'];
+                    STATE.runnerGame.currentSkin = 'default';
+                    
+                    alert('🎉 Compte créé ! Bienvenue ' + username + ' !');
+                }
+                
+                saveState();
+                updateUI();
+                location.reload();
+                
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('❌ Erreur: ' + error.message);
+            }
+        }
+        
+        async function syncToSupabase() {
+            if (!currentUser) return;
+            
+            try {
+                const { error } = await supabaseClient
+                    .from('users')
+                    .update({
+                        username: STATE.profile.name,
+                        avatar: STATE.profile.avatar,
+                        level: STATE.profile.level,
+                        total_coins: STATE.profile.totalCoins,
+                        stories_completed: STATE.profile.storiesCompleted,
+                        high_score: STATE.profile.highScore,
+                        unlocked_skins: STATE.runnerGame.unlockedSkins,
+                        current_skin: STATE.runnerGame.currentSkin
+                    })
+                    .eq('id', currentUser.id);
+                
+                if (error) throw error;
+                console.log('✅ Synchro cloud réussie !');
+            } catch (error) {
+                console.error('❌ Erreur synchro:', error);
+            }
         }
         
         // ========== PROFILE EDIT ==========
