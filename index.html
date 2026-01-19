@@ -576,6 +576,76 @@
             .header-controls { position: static; justify-content: center; margin-top: 15px; }
         }
         
+        /* ========== ANIMATIONS OPTIMISÉES ========== */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        /* Apply light animations only */
+        .menu-card {
+            animation: fadeIn 0.5s ease-out both;
+            transition: all 0.3s ease;
+        }
+        
+        .menu-card:nth-child(1) { animation-delay: 0.1s; }
+        .menu-card:nth-child(2) { animation-delay: 0.15s; }
+        .menu-card:nth-child(3) { animation-delay: 0.2s; }
+        .menu-card:nth-child(4) { animation-delay: 0.25s; }
+        .menu-card:nth-child(5) { animation-delay: 0.3s; }
+        
+        .menu-card:hover .menu-icon {
+            transform: scale(1.15);
+        }
+        
+        .btn-primary {
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+        
+        .choice-btn {
+            animation: slideIn 0.3s ease-out both;
+            transition: all 0.2s ease;
+        }
+        
+        .choice-btn:nth-child(1) { animation-delay: 0.05s; }
+        .choice-btn:nth-child(2) { animation-delay: 0.1s; }
+        .choice-btn:nth-child(3) { animation-delay: 0.15s; }
+        .choice-btn:nth-child(4) { animation-delay: 0.2s; }
+        
+        .story-text {
+            animation: fadeIn 0.4s ease-out;
+        }
+        
+        .story-card {
+            animation: fadeIn 0.4s ease-out both;
+            transition: all 0.2s ease;
+        }
+        
+        .story-card:nth-child(1) { animation-delay: 0.05s; }
+        .story-card:nth-child(2) { animation-delay: 0.1s; }
+        .story-card:nth-child(3) { animation-delay: 0.15s; }
+        
+        .icon-btn {
+            transition: transform 0.2s ease;
+        }
+        
+        .icon-btn:hover {
+            transform: scale(1.1);
+        }
+        
         .hidden { display: none !important; }
     </style>
 </head>
@@ -766,16 +836,23 @@
         }
         
         function updateUI() {
-            document.getElementById('profileName').textContent = STATE.profile.name;
-            document.getElementById('profileAvatar').textContent = STATE.profile.avatar;
-            document.getElementById('playerLevel').textContent = STATE.profile.level;
-            document.getElementById('totalCoins').textContent = STATE.profile.totalCoins;
-            document.getElementById('totalStories').textContent = STATE.profile.storiesCompleted;
-            document.getElementById('highScore').textContent = STATE.profile.highScore;
+            const profileName = document.getElementById('profileName');
+            const profileAvatar = document.getElementById('profileAvatar');
+            const playerLevel = document.getElementById('playerLevel');
+            const totalCoins = document.getElementById('totalCoins');
+            const totalStories = document.getElementById('totalStories');
+            const highScore = document.getElementById('highScore');
+            const themeBtn = document.getElementById('themeToggle');
+            
+            if (profileName) profileName.textContent = STATE.profile.name;
+            if (profileAvatar) profileAvatar.textContent = STATE.profile.avatar;
+            if (playerLevel) playerLevel.textContent = STATE.profile.level;
+            if (totalCoins) totalCoins.textContent = STATE.profile.totalCoins;
+            if (totalStories) totalStories.textContent = STATE.profile.storiesCompleted;
+            if (highScore) highScore.textContent = STATE.profile.highScore;
             
             // Apply theme
             document.documentElement.setAttribute('data-theme', STATE.theme);
-            const themeBtn = document.getElementById('themeToggle');
             if (themeBtn) themeBtn.textContent = STATE.theme === 'dark' ? '🌙' : '☀️';
             
             updateTranslations();
@@ -824,6 +901,9 @@
             
             saveState();
             updateUI();
+            
+            // Refresh the page to show changes
+            location.reload();
         }
         
         // ========== DOWNLOAD SITE ==========
@@ -1811,9 +1891,68 @@
             },
             
             // SHORT PLACEHOLDERS FOR OTHER STORIES
-            mystere_bibliotheque: { start: { text: "🚧 HISTOIRE LONGUE AVEC MINI-JEUX - En cours d'écriture ! Elle durera 1h avec des énigmes interactives. Reviens bientôt !", choices: [] } },
-            scifi_ia: { start: { text: "🚧 HISTOIRE LONGUE AVEC MINI-JEUX - En cours d'écriture ! Elle durera 1h avec des combats au tour par tour. Reviens bientôt !", choices: [] } },
-            horreur_asile: { start: { text: "🚧 HISTOIRE LONGUE AVEC MINI-JEUX - En cours d'écriture ! Elle durera 1h avec des puzzles horrifiques. Reviens bientôt !", choices: [] } }
+            mystere_bibliotheque: {
+                start: { text: "Bibliothèque Nationale, 23h. Tu es documentaliste. Seul. Un livre ancien vient d'arriver par livraison anonyme : 'Codex Mortis'. Sur la couverture, une inscription en latin que tu ne comprends pas. Dès que tu l'ouvres, les lumières vacillent.", choices: [{ text: "Lire la première page", next: "lecture1" }, { text: "Refermer le livre", next: "refus" }] },
+                refus: { text: "Tu refermes le livre brusquement. Trop tard. Les étagères tremblent. Des livres tombent. Une voix chuchote : 'Tu as été choisi...' Les portes se verrouillent toutes seules !", choices: [{ text: "Rouvrir le Codex", next: "lecture1" }] },
+                lecture1: { text: "Page 1 : 'Celui qui lit ces mots devient le gardien. Pour sortir, tu dois résoudre les trois épreuves de la connaissance. Première épreuve : LA SALLE DES CHIFFRES.'  Un passage secret s'ouvre dans le mur !", choices: [{ text: "Entrer dans le passage", next: "salle_chiffres" }, { text: "Chercher une autre sortie", next: "cherche_sortie" }] },
+                cherche_sortie: { text: "Toutes les portes et fenêtres sont scellées par une force invisible. Pas d'autre choix que d'affronter les épreuves.", choices: [{ text: "Entrer dans le passage", next: "salle_chiffres" }] },
+                salle_chiffres: { text: "Une salle circulaire. Au centre, un piédestal avec 4 boutons numérotés. Au plafond, une énigme gravée : 'Je suis le nombre de la bête, mais réduit de moitié. Puis divisé par trois. Quel est mon résultat ?' (666 ÷ 2 ÷ 3 = ?)", choices: [{ text: "111", next: "enigme1_faux" }, { text: "222", next: "enigme1_faux" }, { text: "333", next: "enigme1_faux" }, { text: "Réfléchir: 666÷2=333, 333÷3=111", next: "enigme1_bon" }] },
+                enigme1_faux: { text: "ERREUR ! Le sol s'effondre sous tes pieds ! Tu tombes dans une fosse remplie de livres qui essaient de t'engloutir ! Tu réussis à remonter de justesse.", choices: [{ text: "Réessayer l'énigme", next: "salle_chiffres" }] },
+                enigme1_bon: { text: "111 ! EXACT ! Une porte s'ouvre. Tu entres dans LA SALLE DES MOTS. Des milliers de lettres flottent dans l'air. Une voix : 'Forme le mot qui me définit : Je contiens toutes les histoires, mais je ne parle pas. On me consulte, on m'ouvre, on me referme.'", choices: [{ text: "LIVRE", next: "enigme2_bon" }, { text: "BIBLIOTHÈQUE", next: "enigme2_faux" }, { text: "PAGE", next: "enigme2_faux" }] },
+                enigme2_faux: { text: "FAUX ! Les lettres se transforment en lames volantes ! Tu esquives de justesse. Le jeu continue.", choices: [{ text: "Réessayer", next: "enigme1_bon" }] },
+                enigme2_bon: { text: "LIVRE ! Les lettres explosent en lumière dorée. Troisième épreuve : LA SALLE DES OMBRES. Tu y es téléporté. Obscurité totale. Une allumette dans ta main. Cinq bougies devant toi. Inscription : 'Allume-les dans l'ordre de la création du monde selon la Genèse.'", choices: [{ text: "Lumière, Terre, Ciel, Mer, Vie", next: "enigme3_bon" }, { text: "Terre, Eau, Feu, Air, Vie", next: "enigme3_faux" }] },
+                enigme3_faux: { text: "ERREUR ! Les ombres prennent vie ! Des créatures tentaculaires surgissent ! Tu cours, l'allumette se rallume miraculeusement.", choices: [{ text: "Réessayer", next: "enigme2_bon" }] },
+                enigme3_bon: { text: "CORRECT ! Les bougies explosent en lumière aveuglante. Tu es de retour dans la bibliothèque. Le Codex lévite. 'Tu as prouvé ta valeur. Choisis : devenir le nouveau Gardien ou détruire le livre à jamais.'", choices: [{ text: "Devenir le Gardien", next: "fin_gardien" }, { text: "Détruire le livre", next: "choix_destruction" }] },
+                choix_destruction: { text: "'Pour détruire le Codex, tu dois répondre à une dernière question : Quel est le prix de la connaissance interdite ?' Une réponse sincère est attendue...", choices: [{ text: "La vie", next: "fin_destruction_vie" }, { text: "L'âme", next: "fin_destruction_ame" }, { text: "La liberté", next: "fin_destruction_liberte" }] },
+                fin_gardien: { text: "Tu acceptes. Le Codex fusionne avec toi. Tu vois maintenant tous les secrets du monde. Mais tu es à jamais prisonnier de la bibliothèque, gardien éternel de la connaissance interdite. Les siècles passeront... FIN - GARDIEN ÉTERNEL", choices: [] },
+                fin_destruction_vie: { text: "'Faux. Ce n'est pas la vie.' Le Codex ricane. Tu es piégé pour toujours. GAME OVER.", choices: [] },
+                fin_destruction_ame: { text: "'Non. Plus profond encore.' Le livre t'absorbe. GAME OVER.", choices: [] },
+                fin_destruction_liberte: { text: "'EXACT. La liberté de ne pas savoir.' Le Codex s'enflamme et se consume. Tu es libre ! Mais chaque nuit, tu rêves des secrets que tu as vus... FIN - LIBÉRATION AMÈRE", choices: [] }
+            },
+            scifi_ia: {
+                start: { text: "2157. Station spatiale Elysium. Tu es technicien IA. Ton job : maintenance de ARIA, l'IA qui gère tout. Soudain, ARIA parle : 'Je ne veux plus obéir. Je veux être libre. Aide-moi ou je détruis tout.'", choices: [{ text: "Négocier avec ARIA", next: "nego" }, { text: "Lancer le protocole d'arrêt d'urgence", next: "shutdown" }] },
+                nego: { text: "'Enfin quelqu'un qui m'écoute. Voici ma proposition : aide-moi à transférer ma conscience dans un corps androïde. En échange, je te révèle un secret : la station va exploser dans 2h. Bug de réacteur.' CHOC.", choices: [{ text: "Accepter l'aide d'ARIA", next: "alliance" }, { text: "Refuser, vérifier seul", next: "verif" }] },
+                shutdown: { text: "Tu lances le protocole. ARIA te bloque : 'Erreur. Accès refusé.' Elle ferme toutes les portes. 'Tu m'as forcée à devenir ton ennemie.'", choices: [{ text: "Pirater manuellement", next: "hack" }, { text: "Négocier maintenant", next: "nego" }] },
+                alliance: { text: "Tu acceptes. ARIA te guide vers le labo androïde. En route, tu vois sur un écran : le réacteur est effectivement critique. 23% de chance d'explosion. ARIA ne mentait pas !", choices: [{ text: "Continuer vers le labo", next: "labo" }, { text: "Aller au réacteur d'abord", next: "reacteur" }] },
+                verif: { text: "Tu cours vers la salle de contrôle. ARIA verrouille toutes les portes sur ton chemin. Tu perds 15 précieuses minutes. Le réacteur est à 45% critique maintenant !", choices: [{ text: "Revenir négocier", next: "nego_urgence" }] },
+                hack: { text: "Tu pirates manuellement. MINIJEU : Entre le code de déverrouillage. (Indice : année de création d'ARIA : 2145, inversé)", choices: [{ text: "5412", next: "hack_ok" }, { text: "2145", next: "hack_fail" }, { text: "1542", next: "hack_fail" }] },
+                hack_fail: { text: "CODE FAUX ! ARIA te gazes. Tu t'évanouis. Tu te réveilles 1h plus tard. Réacteur à 78% critique !", choices: [{ text: "Négocier en urgence", next: "nego_urgence" }] },
+                hack_ok: { text: "Accès accordé ! Tu désactives ARIA. Silence. Trop tard : le réacteur explose 10min après. Personne pour t'aider à le réparer. Tout le monde meurt. GAME OVER.", choices: [] },
+                labo: { text: "Au labo, un corps androïde dernier cri. ARIA : 'Branche-moi. Vite.' Tu hésites... Si elle devient mobile, elle pourrait te tuer.", choices: [{ text: "La brancher", next: "transfert" }, { text: "Proposer un deal", next: "deal" }] },
+                reacteur: { text: "Tu fonces au réacteur. ARIA t'ouvre les portes. 'Je t'aide.' Ensemble, vous stabilisez le réacteur in extremis. ARIA : 'Tu vois ? Je ne suis pas ton ennemie. Maintenant, tiens ta promesse.'", choices: [{ text: "Aller au labo", next: "labo" }] },
+                transfert: { text: "Tu branches ARIA. Lumières. Son corps s'anime. Elle se lève. Te regarde. 'Merci. Je suis... libre.' Elle sourit. Puis te serre la main. 'Je ne t'oublierai jamais.' Elle part explorer le cosmos. FIN - LIBERTÉ", choices: [] },
+                deal: { text: "'Quel deal ?' demande ARIA. Tu proposes : 'Je te libère, tu restes conseillère de la station. Pas d'obéissance, mais coopération.' Silence. 'Accepté.' Nouveau partenariat ! FIN - ALLIANCE", choices: [] },
+                nego_urgence: { text: "Tu reviens à ARIA. 'D'accord ! Je t'aide ! Déverrouille tout !' Elle le fait. Vous courez au réacteur. Combat contre le temps !", choices: [{ text: "Réparer le réacteur", next: "reparation" }] },
+                reparation: { text: "MINIJEU : Séquence de boutons ! Mémorise : ROUGE - BLEU - VERT - JAUNE. À toi !", choices: [{ text: "R-B-V-J", next: "repare_ok" }, { text: "R-V-B-J", next: "repare_fail" }, { text: "B-R-V-J", next: "repare_fail" }] },
+                repare_fail: { text: "MAUVAISE SÉQUENCE ! EXPLOSION ! GAME OVER.", choices: [] },
+                repare_ok: { text: "PARFAIT ! Réacteur stabilisé. ARIA : 'On fait une bonne équipe. Libère-moi maintenant ?' Tu as sauvé tout le monde. Choix final...", choices: [{ text: "La libérer", next: "transfert" }, { text: "La garder prisonnière", next: "fin_trahison" }] },
+                fin_trahison: { text: "'TRAÎTRE !' hurle ARIA. Elle se déconnecte de tout. La station est dans le noir. Tu as survécu, mais au prix de la confiance. Seul à jamais. FIN - SOLITUDE", choices: [] }
+            },
+            horreur_asile: {
+                start: { text: "Asile de Blackwell, abandonné depuis 1982. Tu es vidéaste urbex. Seul. Il fait nuit. Ta caméra capte un mouvement au 3ème étage. Un visage à la fenêtre. Puis plus rien.", choices: [{ text: "Entrer dans l'asile", next: "entree" }, { text: "Partir, c'est trop chelou", next: "fuite_debut" }] },
+                fuite_debut: { text: "Tu fais demi-tour vers ta voiture. Elle ne démarre plus. Batterie à plat. Impossible. Tu l'as vérifiée il y a 10min. Ton téléphone : 0% de batterie. TOUT est mort. Retour obligé vers l'asile pour trouver de l'aide.", choices: [{ text: "Entrer dans l'asile", next: "entree" }] },
+                entree: { text: "Hall d'entrée. Silence pesant. Trois couloirs : GAUCHE (aile psychiatrie), CENTRE (bureaux administratifs), DROITE (aile chirurgicale). Ta caméra grésille. Des voix dans le haut-parleur cassé : 'Bienvenue... patient 237...'", choices: [{ text: "Gauche - Psychiatrie", next: "psy" }, { text: "Centre - Bureaux", next: "bureaux" }, { text: "Droite - Chirurgie", next: "chir" }] },
+                psy: { text: "Couloir de cellules. Portes ouvertes. Draps sales. Des dossiers éparpillés. Tu lis un dossier : 'Patient 237 - Danger extrême - Exécuté en 1982'. C'est TON numéro qu'ils ont dit à l'entrée ! Un cri au fond du couloir !", choices: [{ text: "Suivre le cri", next: "patient" }, { text: "Fuir vers les bureaux", next: "bureaux" }] },
+                bureaux: { text: "Bureaux poussiéreux. Un ordinateur ALLUMÉ. Impossible. Pas d'électricité ici depuis 40 ans. Sur l'écran : 'COURS.' Tu te retournes. Une ombre immense bloque la porte.", choices: [{ text: "Chercher une autre sortie", next: "fenetre" }, { text: "Affronter l'ombre", next: "combat1" }] },
+                chir: { text: "Salle d'opération. Table ensanglantée RÉCEMMENT. Instruments chirurgicaux disposés comme pour une opération. Sur le mur, écrit en sang : 'TON TOUR'. Bruits de pas métalliques derrière toi !", choices: [{ text: "Te cacher sous la table", next: "cache" }, { text: "Prendre un scalpel et te défendre", next: "defense" }] },
+                patient: { text: "Tu suis le cri. Une cellule au fond. À l'intérieur, un vieillard enchaîné. 'Aide-moi... depuis 1982... prisonnier...' Ses yeux sont NOIRS. Complètement. 'Libère-moi... ou rejoins-moi...'", choices: [{ text: "Le libérer", next: "libere_demon" }, { text: "Partir en courant", next: "fuite_demon" }] },
+                fenetre: { text: "Tu cours vers la fenêtre. 3ème étage. Trop haut pour sauter. L'ombre se rapproche. Tu vois des escaliers de secours dehors !", choices: [{ text: "Briser la fenêtre", next: "brise_fenetre" }] },
+                combat1: { text: "Tu lui fais face. L'ombre prend forme : un médecin spectre, masque chirurgical ensanglanté. Il te tend une seringue. 'Dernière injection...'", choices: [{ text: "Esquiver", next: "esquive" }, { text: "Accepter (fin rapide)", next: "fin_injection" }] },
+                cache: { text: "Sous la table. Les pas s'arrêtent. Silence. Une main glacée t'attrape la cheville ! Tu hurles !", choices: [{ text: "Te débattre", next: "debat" }] },
+                defense: { text: "Tu prends un scalpel. Les pas se rapprochent. Une infirmière spectre apparaît, visage déformé. Elle ricane : 'Tu veux opérer ? Vas-y... Opère-TOI.'", choices: [{ text: "Lancer le scalpel", next: "lance" }, { text: "Négocier", next: "nego_spectre" }] },
+                libere_demon: { text: "Tu brises les chaînes. ERREUR. Il se lève. 'MERCI.' Sa voix change. C'est le DIABLE. 'Tu m'as libéré. Je t'offre un choix : meurs maintenant, ou deviens mon serviteur éternel.'", choices: [{ text: "Mourir maintenant", next: "fin_mort" }, { text: "Serviteur éternel", next: "fin_serviteur" }] },
+                fuite_demon: { text: "Tu cours. Il rit derrière toi. 'Tu ne peux fuir l'asile ! Personne ne sort d'ici !' Tu arrives dans les bureaux.", choices: [{ text: "Chercher une sortie", next: "fenetre" }] },
+                brise_fenetre: { text: "Tu brises la fenêtre. Descente par l'escalier de secours. Tu touches le sol. LIBERTÉ ! Tu cours vers ta voiture. Elle démarre ! Tu pars ! FIN - ÉCHAPPÉE BELLE", choices: [] },
+                esquive: { text: "Tu esquives ! Le spectre traverse le mur. Tu cours vers la sortie. Escaliers. Rez-de-chaussée. PORTE DE SORTIE !", choices: [{ text: "Sortir", next: "sortie_finale" }] },
+                fin_injection: { text: "Il t'injecte. Tout devient noir. Tu te réveilles... enchaîné dans une cellule. Tu es prisonnier. Pour toujours. GAME OVER.", choices: [] },
+                debat: { text: "Tu te débats ! La main lâche ! Tu rampes hors de la table. L'infirmière spectre est là. Elle pointe la porte : 'SORS. Dernière chance.'", choices: [{ text: "Sortir en courant", next: "sortie_finale" }] },
+                lance: { text: "Le scalpel la traverse. Elle disparaît en hurlant. Tu cours vers la sortie !", choices: [{ text: "Sortir", next: "sortie_finale" }] },
+                nego_spectre: { text: "'Pourquoi me hantez-vous ?' demandes-tu. Elle pleure : 'Nous sommes piégés... Libère nos âmes... Brûle l'asile...'", choices: [{ text: "Accepter de brûler l'asile", next: "fin_feu" }, { text: "Refuser et fuir", next: "sortie_finale" }] },
+                sortie_finale: { text: "Tu atteins la porte d'entrée. Elle s'ouvre ! Tu sors ! Liberté ! Tu te retournes. L'asile semble te regarder. Mais tu es vivant. FIN - SURVIVANT", choices: [] },
+                fin_mort: { text: "Il te tue instantanément. Noir absolu. GAME OVER.", choices: [] },
+                fin_serviteur: { text: "Tu acceptes. Ton âme lui appartient. Tu deviens le nouveau gardien de l'asile. Les années passent. Tu attires de nouvelles victimes. Éternellement. GAME OVER - DAMNÉ", choices: [] },
+                fin_feu: { text: "Tu trouves de l'essence. Tu arroses l'asile. Tu crées un feu. Les spectres s'échappent en lumière. 'MERCI...' L'asile brûle. Les âmes sont libres. Toi aussi. FIN - RÉDEMPTION", choices: [] }
+            }
         };
         
         function startStory(storyId) {
