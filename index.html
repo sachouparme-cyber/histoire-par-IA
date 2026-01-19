@@ -645,6 +645,11 @@
                     <div class="menu-title" data-i18n="leaderboard-title">CLASSEMENT</div>
                     <div class="menu-desc" data-i18n="leaderboard-desc">Top 10 des scores</div>
                 </div>
+                <div class="menu-card" style="opacity: 0.6; cursor: not-allowed; border-color: #666;" onclick="alert('🚧 Snake Game\n\nCe jeu classique arrive bientôt !\nEn attendant, profite du Runner Game et des histoires interactives.')">
+                    <span class="menu-icon">🐍</span>
+                    <div class="menu-title">SNAKE GAME</div>
+                    <div class="menu-desc">🚧 Bientôt disponible</div>
+                </div>
             </div>
         </div>
         
@@ -1665,19 +1670,19 @@
         
         const storyMeta = {
             mystere: [
-                { id: 'manoir', title: 'Le Manoir Blackwood', desc: 'Enquête sur un culte mystérieux', complete: true },
-                { id: 'train', title: 'Le Train de Minuit', desc: 'Meurtre dans un express', complete: true },
-                { id: 'bibliotheque', title: 'La Bibliothèque Maudite', desc: 'Des livres qui tuent', complete: true }
+                { id: 'manoir', title: 'Le Manoir Blackwood', desc: 'Enquête sur un culte mystérieux', complete: true, duration: '5 min' },
+                { id: 'train', title: 'Le Train de Minuit', desc: 'Meurtre dans un express', complete: true, duration: '10 min' },
+                { id: 'bibliotheque', title: 'La Bibliothèque Maudite', desc: 'Des livres qui tuent - avec mini-jeux', complete: true, duration: '1h' }
             ],
             scifi: [
-                { id: 'station', title: 'Station Europa', desc: 'Seul dans l\'espace', complete: true },
-                { id: 'clone', title: 'Le Clone', desc: 'Tu rencontres ton double', complete: true },
-                { id: 'ia', title: 'IA Rebelle', desc: 'L\'IA se retourne', complete: true }
+                { id: 'station', title: 'Station Europa', desc: 'Seul dans l\'espace', complete: true, duration: '5 min' },
+                { id: 'clone', title: 'Le Clone', desc: 'Tu rencontres ton double', complete: true, duration: '10 min' },
+                { id: 'ia', title: 'IA Rebelle', desc: 'L\'IA se retourne - avec mini-jeux', complete: true, duration: '1h' }
             ],
             horreur: [
-                { id: 'maison', title: 'La Maison Inconnue', desc: 'Réveil dans un lieu étrange', complete: true },
-                { id: 'miroir', title: 'Le Miroir Hanté', desc: 'Ton reflet agit seul', complete: true },
-                { id: 'asile', title: 'Asile Abandonné', desc: 'Hôpital psychiatrique', complete: true }
+                { id: 'maison', title: 'La Maison Inconnue', desc: 'Réveil dans un lieu étrange', complete: true, duration: '5 min' },
+                { id: 'miroir', title: 'Le Miroir Hanté', desc: 'Ton reflet agit seul', complete: true, duration: '10 min' },
+                { id: 'asile', title: 'Asile Abandonné', desc: 'Hôpital psychiatrique - avec mini-jeux', complete: true, duration: '1h' }
             ]
         };
         
@@ -1721,15 +1726,154 @@
             storyMeta[currentGenre].forEach(story => {
                 const card = document.createElement('div');
                 card.className = 'story-card';
+                const durationBadge = story.duration ? `<span class="badge" style="background: rgba(102, 126, 234, 0.3); color: #667eea; margin-left: 5px;">⏱️ ${story.duration}</span>` : '';
                 card.innerHTML = `
-                    <h3>${story.title} <span class="badge complete">✓ Jouable</span></h3>
+                    <h3>${story.title} <span class="badge complete">✓ Jouable</span>${durationBadge}</h3>
                     <p>${story.desc}</p>
                 `;
                 card.onclick = () => {
-                    alert('📖 Les histoires complètes seront intégrées dans la prochaine mise à jour!\n\nPour le moment, profitez du Runner Game avec tous ses power-ups, skins et classement! 🎮');
+                    startStory(currentGenre + '_' + story.id);
                 };
                 list.appendChild(card);
             });
+        }
+        
+        // ========== STORIES DATA ==========
+        const stories = {
+            // MYSTÈRE - COURTE (5 min)
+            mystere_manoir: {
+                start: { text: "Tu arrives devant le Manoir Blackwood au crépuscule. La bâtisse victorienne se dresse, menaçante. Tu es détective privé, engagé pour retrouver le propriétaire disparu.", choices: [{ text: "Entrer par la porte principale", next: "entree" }, { text: "Faire le tour", next: "tour" }] },
+                entree: { text: "La porte grince. Le hall est sombre. Un escalier mène à l'étage. Tu entends un bruit du salon.", choices: [{ text: "Aller au salon", next: "salon" }, { text: "Monter l'escalier", next: "etage" }] },
+                tour: { text: "En contournant, tu trouves une porte de service entrouverte. Sur la table, un journal intime.", choices: [{ text: "Lire le journal", next: "journal" }] },
+                salon: { text: "Un portrait te fixe. Une silhouette passe dans le reflet d'un miroir !", choices: [{ text: "Appeler", next: "contact" }] },
+                etage: { text: "Trois portes. L'une éclairée, deux fermées.", choices: [{ text: "Entrer dans la pièce éclairée", next: "bureau" }] },
+                journal: { text: "Il pratiquait des rituels occultes au sous-sol. Dernière entrée : 'Ils viennent ce soir.'", choices: [{ text: "Chercher le sous-sol", next: "soussol" }] },
+                bureau: { text: "Documents sur un culte. Une clé 'Sous-sol'. Derrière un tableau, une porte secrète !", choices: [{ text: "Descendre au sous-sol", next: "soussol" }] },
+                contact: { text: "Une voix : 'Aidez-moi... Sous-sol...' C'est le propriétaire !", choices: [{ text: "Chercher le sous-sol", next: "soussol" }] },
+                soussol: { text: "Une crypte. Des bougies en cercle. Le propriétaire attaché, inconscient. Un homme en robe psalmodie !", choices: [{ text: "Interrompre le rituel", next: "fin_hero" }] },
+                fin_hero: { text: "Tu te jettes sur le cultiste ! Le rituel échoue. Le propriétaire est sauvé. La police arrive. BRAVO !", choices: [] }
+            },
+            
+            // MYSTÈRE - MOYENNE (10 min)  
+            mystere_train: {
+                start: { text: "Orient Express, 1935. Tu es détective. Un cri ! Lord Ashford est mort, poignardé. Porte verrouillée de l'intérieur.", choices: [{ text: "Examiner le corps", next: "corps" }, { text: "Inspecter le compartiment", next: "compartiment" }] },
+                corps: { text: "Poignardé au cœur. Une lettre : 'Rendez-vous minuit. Vous payerez.' Signé 'M'.", choices: [{ text: "Examiner l'arme", next: "arme" }] },
+                compartiment: { text: "Fenêtre fermée, porte verrouillée. Une trappe au plafond... vers le toit !", choices: [{ text: "Monter sur le toit", next: "toit" }] },
+                arme: { text: "Poignard ancien. Gravure : 'Comte Vladimir'. Trop évident...", choices: [{ text: "Continuer l'enquête", next: "toit" }] },
+                toit: { text: "Des traces de pas ! Elles mènent au compartiment 9. Mademoiselle Dubois !", choices: [{ text: "Confronter Dubois", next: "confronte" }, { text: "Fouiller son compartiment", next: "fouille" }] },
+                fouille: { text: "Gants tachés de sang ! Photo d'elle avec Ashford. Au dos : 'Tu le regretteras'.", choices: [{ text: "L'arrêter", next: "fin_succes" }] },
+                confronte: { text: "'C'est moi. Il m'a abandonnée. J'ai volé le poignard, monté sur le toit, entré par sa fenêtre.' Aveux complets !", choices: [{ text: "La livrer aux autorités", next: "fin_succes" }] },
+                fin_succes: { text: "Dubois est arrêtée. Le mystère est résolu. Ta réputation s'envole ! SUCCÈS TOTAL !", choices: []  }
+            },
+            
+            // SCI-FI - COURTE (5 min)
+            scifi_station: { 
+                start: { text: "Station Europa, orbite de Jupiter. Tu es seul. L'équipage a disparu. Un signal étrange vient de la salle des machines.", choices: [{ text: "Aller aux machines", next: "machines" }, { text: "Vérifier les quartiers", next: "quartiers" }] },
+                machines: { text: "Un vaisseau alien est amarré ! Sa porte s'ouvre... Une forme sort.", choices: [{ text: "Communiquer", next: "contact" }, { text: "Te cacher", next: "cacher" }] },
+                quartiers: { text: "Des traces de lutte. Un enregistrement : 'Ils sont pacifiques ! Ne tirez pas !' Trop tard.", choices: [{ text: "Aller aux machines", next: "machines" }] },
+                contact: { text: "L'alien est bienveillant. Il cherchait à échanger. Ton équipage a paniqué. Il peut les ramener !", choices: [{ text: "Accepter l'échange", next: "fin_paix" }] },
+                cacher: { text: "L'alien te trouve. Effrayé, tu tires. Grave erreur. Sa flotte arrive. Fin de l'humanité.", choices: [] },
+                fin_paix: { text: "Premier contact pacifique ! Ton équipage revient. Début d'une nouvelle ère ! BRAVO !", choices: [] }
+            },
+            
+            // SCI-FI - MOYENNE (10 min)
+            scifi_clone: {
+                start: { text: "2157. Tu rentres chez toi. Quelqu'un t'attend... C'est TOI. Ton clone parfait. 'Je suis toi du futur', dit-il.", choices: [{ text: "L'écouter", next: "ecoute" }, { text: "L'attaquer", next: "attaque" }] },
+                ecoute: { text: "'Une catastrophe va détruire la ville demain. J'ai voyagé dans le temps pour te sauver. Nous devons partir !'", choices: [{ text: "Le croire", next: "fuite" }, { text: "Demander des preuves", next: "preuves" }] },
+                attaque: { text: "Vous vous battez. Il te maîtrise facilement. 'Idiot ! Je suis là pour t'aider !'", choices: [{ text: "L'écouter maintenant", next: "ecoute" }] },
+                preuves: { text: "Il montre des photos du futur. Ta ville en ruines. Des millions de morts. C'est réel.", choices: [{ text: "Fuir avec lui", next: "fuite" }, { text: "Prévenir les autorités", next: "autorites" }] },
+                fuite: { text: "Vous fuyez. L'explosion détruit tout le lendemain. Vous survivez, mais des millions meurent. Culpabilité éternelle.", choices: [] },
+                autorites: { text: "Tu convaincs le gouvernement. Évacuation massive. Catastrophe évitée ! Tu es un héros. Ton clone disparaît, paradoxe résolu. VICTOIRE !", choices: [] }
+            },
+            
+            // HORREUR - COURTE (5 min)
+            horreur_maison: {
+                start: { text: "Tu te réveilles dans une pièce inconnue. Pas de fenêtres. Une porte. Des murs qui suintent.", choices: [{ text: "Ouvrir la porte", next: "couloir" }, { text: "Examiner les murs", next: "murs" }] },
+                couloir: { text: "Un couloir infini. Des portes identiques. Tu ouvres la plus proche... C'est la MÊME pièce où tu étais !", choices: [{ text: "Essayer une autre porte", next: "autre" }, { text: "Courir", next: "courir" }] },
+                murs: { text: "Le mur est chaud. Il PULSE. Comme un cœur. Tu réalises... Tu es DANS quelque chose de vivant !", choices: [{ text: "Fuir", next: "couloir" }] },
+                autre: { text: "Toujours la même pièce. Une voix : 'Tu es moi. Je suis toi. Nous sommes UN.'", choices: [{ text: "Accepter", next: "fin_fusion" }, { text: "Refuser", next: "fin_lutte" }] },
+                courir: { text: "Tu cours. Le couloir se rétrécit. Les murs se referment. Tu es écrasé. GAME OVER.", choices: [] },
+                fin_fusion: { text: "Tu acceptes. Ta conscience fusionne avec la maison. Tu ES la maison maintenant. Éternellement.", choices: [] },
+                fin_lutte: { text: "Tu refuses ! Soudain, tu te réveilles... dans ton lit. Cauchemar ? Mais ta main... elle suinte.", choices: [] }
+            },
+            
+            // HORREUR - MOYENNE (10 min)
+            horreur_miroir: {
+                start: { text: "Grenier de ta grand-mère décédée. Un vieux miroir couvert. Tu enlèves le drap. Ton reflet... sourit alors que toi non.", choices: [{ text: "Recouvrir le miroir", next: "recouvrir" }, { text: "Toucher le miroir", next: "toucher" }] },
+                recouvrir: { text: "Trop tard. Ton reflet sort du miroir ! Il te pousse dedans. Vous avez échangé de place !", choices: [{ text: "Frapper le miroir de l'intérieur", next: "interieur" }] },
+                toucher: { text: "Ta main passe À TRAVERS. Ton reflet t'attrape et te tire ! Tu tombes dans le monde miroir.", choices: [{ text: "Explorer", next: "monde_miroir" }] },
+                monde_miroir: { text: "Tout est inversé. Tu vois ton double vivre TA vie. Comment revenir ?", choices: [{ text: "Chercher une sortie", next: "sortie" }, { text: "Appeler ton double", next: "appel" }] },
+                interieur: { text: "Le miroir se fissure. Mais 7 autres reflets sortent ! Ils sont tous toi. Lequel est le vrai ?", choices: [{ text: "Les affronter", next: "combat" }, { text: "Leur parler", next: "negociation" }] },
+                sortie: { text: "Tu trouves un autre miroir. En le traversant... tu es chez toi ! Mais quelque chose cloche. Ton monde est-il le bon ?", choices: [] },
+                appel: { text: "Il t'entend. 'Je suis toi, mais meilleur. Reste là.' Il brise le miroir. Tu es piégé pour toujours.", choices: [] },
+                combat: { text: "Vous vous battez. Quand tu les bats tous, tu peux sortir ! Tu t'échappes, mais as-tu tué des parties de toi-même ?", choices: [] },
+                negociation: { text: "'Nous sommes tous toi. Unis-toi à nous.' Vous fusionnez. Tu deviens complet. Est-ce une victoire ou une perte ?", choices: [] }
+            },
+            
+            // SHORT PLACEHOLDERS FOR OTHER STORIES
+            mystere_bibliotheque: { start: { text: "🚧 HISTOIRE LONGUE AVEC MINI-JEUX - En cours d'écriture ! Elle durera 1h avec des énigmes interactives. Reviens bientôt !", choices: [] } },
+            scifi_ia: { start: { text: "🚧 HISTOIRE LONGUE AVEC MINI-JEUX - En cours d'écriture ! Elle durera 1h avec des combats au tour par tour. Reviens bientôt !", choices: [] } },
+            horreur_asile: { start: { text: "🚧 HISTOIRE LONGUE AVEC MINI-JEUX - En cours d'écriture ! Elle durera 1h avec des puzzles horrifiques. Reviens bientôt !", choices: [] } }
+        };
+        
+        function startStory(storyId) {
+            currentStoryId = storyId;
+            wordCount = 0;
+            choiceCount = 0;
+            storyHTML = '';
+            
+            const content = document.getElementById('contentArea');
+            content.innerHTML = `
+                <div style="margin-bottom: 20px;">
+                    <button class="btn-primary" onclick="loadStoriesSection()">◀ Retour aux histoires</button>
+                    <button class="btn-primary" onclick="startStory('${storyId}')">🔄 Recommencer</button>
+                </div>
+                <div id="storyArea"></div>
+                <div style="display: flex; justify-content: space-around; padding: 20px; background: var(--bg-secondary); border-radius: 8px; margin: 20px 0;">
+                    <div style="text-align: center;"><div style="font-size: 28px; font-weight: bold; color: var(--accent);" id="words">0</div><div style="color: var(--text-secondary); font-size: 14px;">Mots lus</div></div>
+                    <div style="text-align: center;"><div style="font-size: 28px; font-weight: bold; color: var(--accent);" id="choices">0</div><div style="color: var(--text-secondary); font-size: 14px;">Choix faits</div></div>
+                </div>
+            `;
+            
+            if (!stories[storyId]) {
+                alert('❌ Histoire introuvable !');
+                loadStoriesSection();
+                return;
+            }
+            
+            showNode('start');
+        }
+        
+        function showNode(nodeId) {
+            const story = stories[currentStoryId];
+            if (!story || !story[nodeId]) return;
+            
+            const node = story[nodeId];
+            storyHTML += '<div class="story-text"><p>' + node.text + '</p></div>';
+            wordCount += node.text.split(/\s+/).length;
+            
+            let choicesHTML = '<div class="choices">';
+            if (node.choices && node.choices.length > 0) {
+                node.choices.forEach((choice, i) => {
+                    choicesHTML += '<button class="choice-btn" onclick="makeChoice(\'' + choice.next + '\')">' + (i + 1) + ') ' + choice.text + '</button>';
+                });
+            } else {
+                choicesHTML += '<div class="ending"><h2>📖 FIN</h2></div>';
+                choicesHTML += '<div style="text-align: center; margin-top: 20px;"><button class="btn-primary" onclick="loadStoriesSection()">📚 Autres histoires</button> <button class="btn-primary" onclick="startStory(\'' + currentStoryId + '\')">🔄 Recommencer</button></div>';
+            }
+            choicesHTML += '</div>';
+            
+            const storyArea = document.getElementById('storyArea');
+            if (storyArea) storyArea.innerHTML = storyHTML + choicesHTML;
+            
+            document.getElementById('words').textContent = wordCount;
+            document.getElementById('choices').textContent = choiceCount;
+            window.scrollTo(0, document.body.scrollHeight);
+        }
+        
+        function makeChoice(nextNode) {
+            choiceCount++;
+            showNode(nextNode);
         }
         
         // ========== PWA SUPPORT ==========
