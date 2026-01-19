@@ -663,7 +663,9 @@
                     <button class="lang-btn" onclick="setLanguage('es')">🇪🇸</button>
                 </div>
                 <button class="icon-btn" id="themeToggle" onclick="toggleTheme()" title="Changer le thème">🌙</button>
-                <button class="icon-btn" onclick="currentUser ? editProfile() : showLoginModal()" title="Connexion / Profil">👤</button>
+                <button class="icon-btn" id="btnCreateAccount" onclick="showCreateAccountModal()" title="Créer un compte" style="background: #4ade80; border-color: #4ade80;">✨</button>
+                <button class="icon-btn" id="btnLogin" onclick="showLoginModal()" title="Se connecter">🔐</button>
+                <button class="icon-btn" id="btnProfile" onclick="editProfile()" title="Mon profil" style="display: none;">👤</button>
                 <button class="icon-btn" onclick="downloadSite()" title="Télécharger le site">💾</button>
             </div>
         </div>
@@ -690,6 +692,17 @@
                     <div class="stat-value" id="highScore">0</div>
                     <div class="stat-label" data-i18n="highscore">Record</div>
                 </div>
+            </div>
+        </div>
+        
+        <!-- WARNING BANNER FOR NON-LOGGED USERS -->
+        <div id="warningBanner" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%); padding: 20px; border-radius: 10px; margin-bottom: 30px; text-align: center; border: 3px solid #ff4757; display: none;">
+            <div style="font-size: 24px; margin-bottom: 10px;">⚠️ ATTENTION ⚠️</div>
+            <div style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">Tu n'es pas connecté !</div>
+            <div style="font-size: 16px; margin-bottom: 15px;">Sans compte, tu perdras toute ta progression (pièces, skins, scores) si tu quittes le site !</div>
+            <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                <button class="btn-primary" onclick="showCreateAccountModal()" style="background: #4ade80;">✨ CRÉER UN COMPTE</button>
+                <button class="btn-primary" onclick="showLoginModal()">🔐 SE CONNECTER</button>
             </div>
         </div>
         
@@ -842,6 +855,7 @@
             loadState();
             updateUI();
             setupEventListeners();
+            updateAuthButtons();
         }
         
         function loadState() {
@@ -898,15 +912,11 @@
             saveState();
         }
         
-        // ========== SUPABASE LOGIN/SYNC ==========
-        async function showLoginModal() {
-            if (!supabaseClient) {
-                alert('⚠️ Connexion cloud non disponible.\nTon profil sera sauvegardé localement uniquement.');
-                editProfile();
-                return;
-            }
-            
-            const email = prompt('📧 Entre ton email:');
+        // ========== AUTHENTICATION SYSTEM ==========
+        let pendingVerification = null;
+        
+        async function showCreateAccountModal() {
+            const email = prompt('✨ CRÉER UN COMPTE\n\n📧 Entre ton adresse email:');
             if (!email || !email.includes('@')) {
                 alert('❌ Email invalide !');
                 return;
@@ -918,9 +928,244 @@
                 return;
             }
             
-            await loginOrRegister(email.trim(), username.trim());
+            await createAccount(email.trim(), username.trim());
         }
         
+        async function createAccount(email, username) {
+            if (!supabaseClient) {
+                alert('⚠️ Service cloud non disponible.\nCréation de compte impossible.');
+                return;
+            }
+            
+            try {
+                // Check if user exists
+                const { data: existingUser } = await supabaseClient
+                    .from('users')
+                    .select('email')
+                    .eq('email', email)
+                    .single();
+                
+                if (existingUser) {
+                    alert('❌ Cet email est déjà utilisé !\n\nUtilise le bouton "Se connecter" 🔐');
+                    return;
+                }
+                
+                // Generate 6-digit code
+                const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+                
+                // Store pending verification
+                pendingVerification = {
+                    email: email,
+                    username: username,
+                    code: verificationCode,
+                    type: 'create',
+                    timestamp: Date.now()
+                };
+                
+                // Send email (simulation - in reality would use Supabase Edge Functions)
+                await sendVerificationEmail(email, verificationCode, 'create');
+                
+                // Ask for code
+                const enteredCode = prompt(`📧 Un code à 6 chiffres a été envoyé à:\n${email}\n\n🔢 Entre le code:`);
+                
+                if (enteredCode === verificationCode) {
+                    await finalizeAccountCreation();
+                } else {
+                    alert('❌ Code incorrect !\n\nRéessaye.');
+                    pendingVerification = null;
+                }
+                
+            } catch (error) {
+                console.error('Erreur création compte:', error);
+                alert('❌ Erreur: ' + error.message);
+            }
+        }
+        
+        async function finalizeAccountCreation() {
+            if (!pendingVerification) return;
+            
+            try {
+                const { data: newUser, error } = await supabaseClient
+                    .from('users')
+                    .insert([{
+                        email: pendingVerification.email,
+                        username: pendingVerification.username,
+                        avatar: '😎',
+                        level: 1,
+                        total_coins: 0,
+                        stories_completed: 0,
+                        high_score: 0,
+                        unlocked_skins: ['default'],
+                        current_skin: 'default'
+                    }])
+                    .select()
+                    .single();
+                
+                if (error) throw error;
+                
+                currentUser = newUser;
+                STATE.profile = {
+                    name: newUser.username,
+                    avatar: '😎',
+                    level: 1,
+                    totalCoins: 0,
+                    storiesCompleted: 0,
+                    highScore: 0
+                };
+                STATE.runnerGame.unlockedSkins = ['default'];
+                STATE.runnerGame.currentSkin = 'default';
+                
+                saveState();
+                updateUI();
+                updateAuthButtons();
+                
+                alert('🎉 COMPTE CRÉÉ AVEC SUCCÈS !\n\nBienvenue ' + newUser.username + ' !\n\nTa progression est maintenant sauvegardée dans le cloud ! ☁️');
+                
+                pendingVerification = null;
+                
+            } catch (error) {
+                console.error('Erreur finalisation:', error);
+                alert('❌ Erreur: ' + error.message);
+            }
+        }
+        
+        async function showLoginModal() {
+            const email = prompt('🔐 CONNEXION\n\n📧 Entre ton adresse email:');
+            if (!email || !email.includes('@')) {
+                alert('❌ Email invalide !');
+                return;
+            }
+            
+            await loginWithEmail(email.trim());
+        }
+        
+        async function loginWithEmail(email) {
+            if (!supabaseClient) {
+                alert('⚠️ Service cloud non disponible.');
+                return;
+            }
+            
+            try {
+                // Check if user exists
+                const { data: user, error } = await supabaseClient
+                    .from('users')
+                    .select('*')
+                    .eq('email', email)
+                    .single();
+                
+                if (!user) {
+                    const createNow = confirm('❌ Aucun compte trouvé avec cet email.\n\n✨ Veux-tu créer un compte maintenant ?');
+                    if (createNow) {
+                        showCreateAccountModal();
+                    }
+                    return;
+                }
+                
+                // Generate 6-digit code
+                const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+                
+                pendingVerification = {
+                    email: email,
+                    user: user,
+                    code: verificationCode,
+                    type: 'login',
+                    timestamp: Date.now()
+                };
+                
+                // Send email
+                await sendVerificationEmail(email, verificationCode, 'login');
+                
+                // Ask for code
+                const enteredCode = prompt(`📧 Un code à 6 chiffres a été envoyé à:\n${email}\n\n🔢 Entre le code:`);
+                
+                if (enteredCode === verificationCode) {
+                    await finalizeLogin();
+                } else {
+                    alert('❌ Code incorrect !\n\nRéessaye.');
+                    pendingVerification = null;
+                }
+                
+            } catch (error) {
+                console.error('Erreur login:', error);
+                alert('❌ Erreur: ' + error.message);
+            }
+        }
+        
+        async function finalizeLogin() {
+            if (!pendingVerification || !pendingVerification.user) return;
+            
+            const user = pendingVerification.user;
+            
+            currentUser = user;
+            STATE.profile = {
+                name: user.username,
+                avatar: user.avatar,
+                level: user.level,
+                totalCoins: user.total_coins,
+                storiesCompleted: user.stories_completed,
+                highScore: user.high_score
+            };
+            STATE.runnerGame.unlockedSkins = user.unlocked_skins || ['default'];
+            STATE.runnerGame.currentSkin = user.current_skin || 'default';
+            
+            saveState();
+            updateUI();
+            updateAuthButtons();
+            
+            alert('✅ CONNEXION RÉUSSIE !\n\nBon retour ' + user.username + ' ! 🎮');
+            
+            pendingVerification = null;
+        }
+        
+        async function sendVerificationEmail(email, code, type) {
+            // This simulates sending an email
+            // In production, this would call a Supabase Edge Function
+            console.log(`📧 Email envoyé à ${email}`);
+            console.log(`🔢 Code: ${code}`);
+            console.log(`📝 Type: ${type}`);
+            
+            // For demo purposes, show the code in console
+            alert(`📧 EMAIL ENVOYÉ !\n\n(En mode démo, le code est: ${code})\n\nEn production, tu recevrais un vrai email.`);
+            
+            return true;
+        }
+        
+        async function sendRecordEmail(username, score) {
+            if (!currentUser) return;
+            
+            console.log(`🏆 Nouveau record pour ${username}: ${score} points !`);
+            // Would send real email in production via Supabase Edge Function
+            
+            return true;
+        }
+        
+        async function sendDailyReminder(email, username) {
+            console.log(`📅 Rappel quotidien envoyé à ${username} (${email})`);
+            // Would send real email in production
+            
+            return true;
+        }
+        
+        function updateAuthButtons() {
+            const btnCreate = document.getElementById('btnCreateAccount');
+            const btnLogin = document.getElementById('btnLogin');
+            const btnProfile = document.getElementById('btnProfile');
+            const warningBanner = document.getElementById('warningBanner');
+            
+            if (currentUser) {
+                if (btnCreate) btnCreate.style.display = 'none';
+                if (btnLogin) btnLogin.style.display = 'none';
+                if (btnProfile) btnProfile.style.display = 'flex';
+                if (warningBanner) warningBanner.style.display = 'none';
+            } else {
+                if (btnCreate) btnCreate.style.display = 'flex';
+                if (btnLogin) btnLogin.style.display = 'flex';
+                if (btnProfile) btnProfile.style.display = 'none';
+                if (warningBanner) warningBanner.style.display = 'block';
+            }
+        }
+        
+        // ========== SUPABASE LOGIN/SYNC (OLD - KEPT FOR COMPATIBILITY) ==========
         async function loginOrRegister(email, username) {
             if (!supabaseClient) {
                 alert('⚠️ Supabase non disponible');
@@ -1538,6 +1783,11 @@
             if (isNewHighScore) {
                 STATE.profile.highScore = gameScore;
                 document.getElementById('newHighScore').classList.remove('hidden');
+                
+                // Send email if user is logged in
+                if (currentUser) {
+                    sendRecordEmail(STATE.profile.name, gameScore);
+                }
             }
             
             // Add to leaderboard
