@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#1a1a1a">
     <link rel="manifest" href="manifest.json">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.js"></script>
     <title>RÉCITS INFINIS - Ultimate Edition</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,700;1,400&family=Courier+Prime&display=swap');
@@ -747,8 +747,20 @@
         const SUPABASE_URL = 'https://wsxqgtzyhglmeddybzgn.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_ix9Cb9aP0eDcvreT2fX1jg_DqWqZHjS';
         
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        let supabaseClient = null;
         let currentUser = null;
+        
+        // Initialize Supabase safely
+        if (typeof supabase !== 'undefined') {
+            try {
+                supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                console.log('✅ Supabase connecté !');
+            } catch (error) {
+                console.error('❌ Erreur Supabase:', error);
+            }
+        } else {
+            console.warn('⚠️ Supabase non chargé - mode local uniquement');
+        }
         
         // ========== GLOBAL STATE ==========
         const STATE = {
@@ -888,6 +900,12 @@
         
         // ========== SUPABASE LOGIN/SYNC ==========
         async function showLoginModal() {
+            if (!supabaseClient) {
+                alert('⚠️ Connexion cloud non disponible.\nTon profil sera sauvegardé localement uniquement.');
+                editProfile();
+                return;
+            }
+            
             const email = prompt('📧 Entre ton email:');
             if (!email || !email.includes('@')) {
                 alert('❌ Email invalide !');
@@ -904,6 +922,11 @@
         }
         
         async function loginOrRegister(email, username) {
+            if (!supabaseClient) {
+                alert('⚠️ Supabase non disponible');
+                return;
+            }
+            
             try {
                 const { data: existingUser, error: fetchError } = await supabaseClient
                     .from('users')
@@ -970,7 +993,7 @@
         }
         
         async function syncToSupabase() {
-            if (!currentUser) return;
+            if (!currentUser || !supabaseClient) return;
             
             try {
                 const { error } = await supabaseClient
@@ -2140,7 +2163,7 @@
                 // Service worker can be added later for full PWA support
             });
         }
-        Connexion Supabase + 9 histoires
+        
         init();
     </script>
 </body>
