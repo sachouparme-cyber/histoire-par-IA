@@ -887,6 +887,14 @@
                 <div>
                     <div class="profile-name" id="profileName">Joueur</div>
                     <div style="color: var(--text-secondary); font-size: 14px;" data-i18n="level">Niveau <span id="playerLevel">1</span></div>
+                    <div style="margin-top: 5px; width: 200px;">
+                        <div style="background: var(--bg-tertiary); height: 8px; border-radius: 4px; overflow: hidden; border: 1px solid var(--border-color);">
+                            <div id="xpBar" style="background: linear-gradient(90deg, #667eea, #764ba2); height: 100%; width: 0%; transition: width 0.5s;"></div>
+                        </div>
+                        <div style="font-size: 11px; color: var(--text-secondary); margin-top: 2px;">
+                            <span id="xpDisplay">0 / 100 XP</span>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="profile-stats">
@@ -1023,6 +1031,7 @@
                 name: 'Joueur',
                 avatar: '😎',
                 level: 1,
+                xp: 0,
                 totalCoins: 0,
                 storiesCompleted: 0,
                 highScore: 0
@@ -1036,6 +1045,38 @@
                 unlockedSkins: ['default'],
                 leaderboard: []
             }
+        };
+        
+        // ========== LEVEL-UP SYSTEM ==========
+        const LEVEL_REQUIREMENTS = [
+            0,      // Level 1
+            100,    // Level 2
+            250,    // Level 3
+            500,    // Level 4
+            1000,   // Level 5
+            2000,   // Level 6
+            3500,   // Level 7
+            5500,   // Level 8
+            8000,   // Level 9
+            11000,  // Level 10
+            15000,  // Level 11
+            20000,  // Level 12
+            26000,  // Level 13
+            33000,  // Level 14
+            41000,  // Level 15
+            50000   // Level 16+
+        ];
+        
+        const LEVEL_REWARDS = {
+            2: { coins: 50, message: '💰 50 pièces bonus !' },
+            3: { coins: 0, skin: 'ninja', message: '🥷 Skin Ninja débloqué !' },
+            4: { coins: 100, message: '💰 100 pièces bonus !' },
+            5: { coins: 0, skin: 'robot', message: '🤖 Skin Robot débloqué !' },
+            6: { coins: 150, message: '💰 150 pièces bonus !' },
+            7: { coins: 0, skin: 'alien', message: '👽 Skin Alien débloqué !' },
+            8: { coins: 200, message: '💰 200 pièces bonus !' },
+            9: { coins: 0, skin: 'zombie', message: '🧟 Skin Zombie débloqué !' },
+            10: { coins: 500, skin: 'superhero', message: '🦸 Skin Superhero + 500 pièces !' }
         };
         
         // ========== TRANSLATIONS ==========
@@ -1133,6 +1174,7 @@
             if (themeBtn) themeBtn.textContent = STATE.theme === 'dark' ? '🌙' : '☀️';
             
             updateTranslations();
+            updateXPDisplay();
         }
         
         function setupEventListeners() {
@@ -1141,6 +1183,150 @@
             if (isMobile) {
                 // Will show mobile controls when runner starts
             }
+        }
+        
+        // ========== LEVEL-UP FUNCTIONS ==========
+        function addXP(amount, source = '') {
+            const oldLevel = STATE.profile.level;
+            STATE.profile.xp += amount;
+            
+            // Check for level up
+            checkLevelUp(oldLevel);
+            
+            // Update UI
+            updateXPDisplay();
+            saveState();
+            
+            // Show XP gain notification (subtle)
+            if (amount > 0) {
+                showXPGain(amount, source);
+            }
+        }
+        
+        function checkLevelUp(oldLevel) {
+            let currentLevel = STATE.profile.level;
+            let currentXP = STATE.profile.xp;
+            
+            // Check if can level up
+            while (currentLevel < LEVEL_REQUIREMENTS.length && currentXP >= LEVEL_REQUIREMENTS[currentLevel]) {
+                currentLevel++;
+            }
+            
+            if (currentLevel > oldLevel) {
+                STATE.profile.level = currentLevel;
+                
+                // Give rewards for each level gained
+                for (let level = oldLevel + 1; level <= currentLevel; level++) {
+                    giveLevelReward(level);
+                }
+            }
+        }
+        
+        function giveLevelReward(level) {
+            const reward = LEVEL_REWARDS[level];
+            
+            if (!reward) {
+                // Default reward for levels without specific rewards
+                const defaultCoins = level * 10;
+                STATE.profile.totalCoins += defaultCoins;
+                showLevelUpNotification(level, `💰 ${defaultCoins} pièces bonus !`);
+                return;
+            }
+            
+            // Give coins
+            if (reward.coins > 0) {
+                STATE.profile.totalCoins += reward.coins;
+            }
+            
+            // Unlock skin
+            if (reward.skin && !STATE.runnerGame.unlockedSkins.includes(reward.skin)) {
+                STATE.runnerGame.unlockedSkins.push(reward.skin);
+            }
+            
+            // Show notification
+            showLevelUpNotification(level, reward.message);
+            
+            playSound('powerupSound');
+            saveState();
+            updateUI();
+        }
+        
+        function showLevelUpNotification(level, message) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: #fff;
+                padding: 40px 60px;
+                border-radius: 20px;
+                font-size: 24px;
+                font-weight: bold;
+                text-align: center;
+                z-index: 99999;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+                animation: fadeIn 0.5s;
+                font-family: 'Courier Prime', monospace;
+            `;
+            
+            notification.innerHTML = `
+                <div style="font-size: 48px; margin-bottom: 10px;">🎉</div>
+                <div style="font-size: 32px; margin-bottom: 15px;">LEVEL UP !</div>
+                <div style="font-size: 28px; margin-bottom: 20px;">Niveau ${level}</div>
+                <div style="font-size: 20px; opacity: 0.9;">${message}</div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'fadeOut 0.5s';
+                setTimeout(() => notification.remove(), 500);
+            }, 3000);
+        }
+        
+        function showXPGain(amount, source) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 20px;
+                background: rgba(102, 126, 234, 0.9);
+                color: #fff;
+                padding: 12px 20px;
+                border-radius: 8px;
+                font-size: 16px;
+                font-weight: bold;
+                z-index: 9998;
+                animation: slideIn 0.3s;
+                font-family: 'Courier Prime', monospace;
+            `;
+            
+            notification.textContent = `+${amount} XP ${source ? '(' + source + ')' : ''}`;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'fadeOut 0.3s';
+                setTimeout(() => notification.remove(), 300);
+            }, 2000);
+        }
+        
+        function updateXPDisplay() {
+            const currentLevel = STATE.profile.level;
+            const currentXP = STATE.profile.xp;
+            const nextLevelXP = LEVEL_REQUIREMENTS[currentLevel] || LEVEL_REQUIREMENTS[LEVEL_REQUIREMENTS.length - 1];
+            const prevLevelXP = LEVEL_REQUIREMENTS[currentLevel - 1] || 0;
+            
+            const xpInCurrentLevel = currentXP - prevLevelXP;
+            const xpNeededForLevel = nextLevelXP - prevLevelXP;
+            const percentage = (xpInCurrentLevel / xpNeededForLevel) * 100;
+            
+            const xpBar = document.getElementById('xpBar');
+            const xpDisplay = document.getElementById('xpDisplay');
+            
+            if (xpBar) xpBar.style.width = Math.min(percentage, 100) + '%';
+            if (xpDisplay) xpDisplay.textContent = `${xpInCurrentLevel} / ${xpNeededForLevel} XP`;
         }
         
         // ========== THEME TOGGLE ==========
@@ -1488,6 +1674,7 @@
                         username: STATE.profile.name,
                         avatar: STATE.profile.avatar,
                         level: STATE.profile.level,
+                        xp: STATE.profile.xp,
                         total_coins: STATE.profile.totalCoins,
                         stories_completed: STATE.profile.storiesCompleted,
                         high_score: STATE.profile.highScore,
@@ -1528,6 +1715,12 @@
             }
             
             saveState();
+            
+            // Sync with Supabase if connected (without losing connection)
+            if (currentUser && supabaseClient) {
+                syncToSupabase();
+            }
+            
             updateUI();
             
             // Refresh the page to show changes
@@ -1764,6 +1957,7 @@
             if (head.x === snakeGame.food.x && head.y === snakeGame.food.y) {
                 snakeGame.score += 10;
                 STATE.profile.totalCoins += 5;
+                addXP(2, 'Snake');
                 document.getElementById('snakeScore').textContent = snakeGame.score;
                 spawnFood();
                 playSound('coinSound');
@@ -2286,6 +2480,12 @@
                         coin.collected = true;
                         gameCoins += 10;
                         STATE.profile.totalCoins += 10;
+                        
+                        // Add XP every 10 coins collected
+                        if (gameCoins % 100 === 0) {
+                            addXP(5, 'Runner');
+                        }
+                        
                         playSound('coinSound');
                         saveState();
                     }
@@ -2919,6 +3119,10 @@
                     choicesHTML += '<button class="choice-btn" onclick="makeChoice(\'' + choice.next + '\')">' + (i + 1) + ') ' + choice.text + '</button>';
                 });
             } else {
+                // Story completed!
+                STATE.profile.storiesCompleted++;
+                addXP(50, 'Histoire terminée');
+                
                 choicesHTML += '<div class="ending"><h2>📖 FIN</h2></div>';
                 choicesHTML += '<div style="text-align: center; margin-top: 20px;"><button class="btn-primary" onclick="loadStoriesSection()">📚 Autres histoires</button> <button class="btn-primary" onclick="startStory(\'' + currentStoryId + '\')">🔄 Recommencer</button></div>';
             }
@@ -3245,6 +3449,7 @@
                 if (error) throw error;
                 
                 input.value = '';
+                addXP(1, 'Chat');
                 playSound('coinSound');
                 
             } catch (error) {
