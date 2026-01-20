@@ -62,14 +62,14 @@
         }
         
         .header h1 { font-size: 48px; margin-bottom: 10px; letter-spacing: 2px; }
-        .tagline { color: var(--text-secondary); font-style: italic; }
+        .tagline { color: var(--text-secondary); font-style: italic; margin-bottom: 20px; }
         
         .header-controls {
-            position: absolute;
-            top: 0;
-            right: 0;
             display: flex;
             gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 15px;
         }
         
         .icon-btn {
@@ -871,6 +871,7 @@
                     <button class="lang-btn" onclick="setLanguage('es')">🇪🇸</button>
                 </div>
                 <button class="icon-btn" id="themeToggle" onclick="toggleTheme()" title="Changer le thème">🌙</button>
+                <button class="icon-btn" onclick="toggleOnlineUsers()" title="Joueurs en ligne" id="onlineUsersBtn">👥</button>
                 <button class="icon-btn" onclick="toggleChat()" title="Chat global" id="chatBtn">💬</button>
                 <button class="icon-btn" id="btnCreateAccount" onclick="showCreateAccountModal()" title="Créer un compte" style="background: #4ade80; border-color: #4ade80;">✨</button>
                 <button class="icon-btn" id="btnLogin" onclick="showLoginModal()" title="Se connecter">🔐</button>
@@ -956,12 +957,6 @@
             <span>💬 CHAT GLOBAL</span>
             <button class="chat-close" onclick="toggleChat()">×</button>
         </div>
-        <div style="padding: 10px; background: var(--bg-tertiary); border-bottom: 2px solid var(--border-color);">
-            <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 5px;">👥 En ligne maintenant:</div>
-            <div id="onlineUsers" style="display: flex; flex-wrap: wrap; gap: 5px;">
-                <div style="color: var(--text-secondary); font-size: 12px;">Chargement...</div>
-            </div>
-        </div>
         <div class="chat-messages" id="chatMessages">
             <div style="text-align: center; color: var(--text-secondary); padding: 20px;">
                 Chargement des messages...
@@ -970,6 +965,19 @@
         <div class="chat-input-area">
             <input type="text" class="chat-input" id="chatInput" placeholder="Tape ton message..." maxlength="200" onkeypress="if(event.key==='Enter') sendChatMessage()">
             <button class="chat-send-btn" onclick="sendChatMessage()">📤</button>
+        </div>
+    </div>
+    
+    <!-- ONLINE USERS WINDOW -->
+    <div id="onlineUsersWindow" style="display: none; position: fixed; bottom: 20px; right: 390px; width: 300px; background: var(--bg-secondary); border: 3px solid var(--accent); border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); z-index: 9999; font-family: 'Courier Prime', monospace;">
+        <div class="chat-header">
+            <span>👥 JOUEURS EN LIGNE</span>
+            <button class="chat-close" onclick="toggleOnlineUsers()">×</button>
+        </div>
+        <div style="padding: 20px; max-height: 400px; overflow-y: auto; background: var(--bg-primary);">
+            <div id="onlineUsersList" style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="color: var(--text-secondary); text-align: center;">Chargement...</div>
+            </div>
         </div>
     </div>
     
@@ -1699,7 +1707,7 @@
             spawnFood();
             
             if (snakeGame.gameLoop) clearInterval(snakeGame.gameLoop);
-            snakeGame.gameLoop = setInterval(updateSnakeGame, 100);
+            snakeGame.gameLoop = setInterval(updateSnakeGame, 150); // Ralenti : 150ms au lieu de 100ms
         }
         
         function spawnFood() {
@@ -2931,6 +2939,7 @@
         
         // ========== CHAT SYSTEM ==========
         let chatOpen = false;
+        let onlineUsersWindowOpen = false;
         let chatMessages = [];
         let lastMessageTime = 0;
         let messageCount = 0;
@@ -2938,6 +2947,22 @@
         let onlineUsersSubscription = null;
         let onlineUsers = [];
         let heartbeatInterval = null;
+        
+        function toggleOnlineUsers() {
+            onlineUsersWindowOpen = !onlineUsersWindowOpen;
+            const window = document.getElementById('onlineUsersWindow');
+            
+            if (onlineUsersWindowOpen) {
+                window.style.display = 'block';
+                loadOnlineUsers();
+                subscribeToOnlineUsers();
+            } else {
+                window.style.display = 'none';
+                if (onlineUsersSubscription) {
+                    onlineUsersSubscription.unsubscribe();
+                }
+            }
+        }
         
         function toggleChat() {
             chatOpen = !chatOpen;
@@ -2948,8 +2973,6 @@
                 chatWindow.classList.add('open');
                 loadChatMessages();
                 subscribeToChat();
-                loadOnlineUsers();
-                subscribeToOnlineUsers();
                 
                 // Remove notification
                 const notif = chatBtn.querySelector('.chat-notification');
@@ -2958,9 +2981,6 @@
                 chatWindow.classList.remove('open');
                 if (chatSubscription) {
                     chatSubscription.unsubscribe();
-                }
-                if (onlineUsersSubscription) {
-                    onlineUsersSubscription.unsubscribe();
                 }
             }
         }
@@ -2989,7 +3009,8 @@
         
         async function loadOnlineUsers() {
             if (!supabaseClient) {
-                document.getElementById('onlineUsers').innerHTML = '<div style="color: var(--text-secondary); font-size: 12px;">Service non disponible</div>';
+                const container = document.getElementById('onlineUsersList');
+                if (container) container.innerHTML = '<div style="color: var(--text-secondary); font-size: 12px; text-align: center;">Service non disponible</div>';
                 return;
             }
             
@@ -3004,7 +3025,8 @@
                     .order('last_seen', { ascending: false });
                 
                 if (error && error.code === '42P01') {
-                    document.getElementById('onlineUsers').innerHTML = '<div style="color: var(--text-secondary); font-size: 12px;">Table non créée (voir SQL)</div>';
+                    const container = document.getElementById('onlineUsersList');
+                    if (container) container.innerHTML = '<div style="color: var(--text-secondary); font-size: 12px; text-align: center;">Table non créée<br>(voir SQL)</div>';
                     return;
                 }
                 
@@ -3015,25 +3037,28 @@
                 
             } catch (error) {
                 console.error('Erreur online users:', error);
-                document.getElementById('onlineUsers').innerHTML = '<div style="color: var(--danger); font-size: 12px;">Erreur</div>';
+                const container = document.getElementById('onlineUsersList');
+                if (container) container.innerHTML = '<div style="color: var(--danger); font-size: 12px; text-align: center;">Erreur</div>';
             }
         }
         
         function renderOnlineUsers() {
-            const container = document.getElementById('onlineUsers');
+            const container = document.getElementById('onlineUsersList');
+            if (!container) return;
             
             if (onlineUsers.length === 0) {
-                container.innerHTML = '<div style="color: var(--text-secondary); font-size: 12px;">Personne en ligne</div>';
+                container.innerHTML = '<div style="color: var(--text-secondary); text-align: center;">😴 Personne en ligne</div>';
                 return;
             }
             
             let html = '';
             onlineUsers.forEach(user => {
                 html += `
-                    <div class="online-user">
+                    <div style="display: flex; align-items: center; gap: 10px; background: var(--bg-secondary); padding: 12px; border-radius: 8px; border-left: 3px solid var(--accent);">
                         <span class="online-indicator"></span>
-                        <span class="online-user-avatar">${user.avatar}</span>
-                        <span class="online-user-name">${user.username}</span>
+                        <span style="font-size: 24px;">${user.avatar}</span>
+                        <span style="font-weight: bold; color: var(--text-primary); flex: 1;">${user.username}</span>
+                        <span style="font-size: 11px; color: var(--text-secondary);">En ligne</span>
                     </div>
                 `;
             });
