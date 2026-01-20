@@ -808,6 +808,37 @@
             animation: pulse 1s infinite;
         }
         
+        .online-user {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: var(--bg-secondary);
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .online-user-avatar {
+            font-size: 14px;
+        }
+        
+        .online-user-name {
+            color: var(--text-primary);
+            max-width: 80px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .online-indicator {
+            width: 6px;
+            height: 6px;
+            background: #4ade80;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
         @media (max-width: 768px) {
             #chatWindow {
                 width: 100%;
@@ -907,10 +938,10 @@
                     <div class="menu-title" data-i18n="leaderboard-title">CLASSEMENT</div>
                     <div class="menu-desc" data-i18n="leaderboard-desc">Top 10 des scores</div>
                 </div>
-                <div class="menu-card" style="opacity: 0.6; cursor: not-allowed; border-color: #666;" onclick="alert('🚧 Snake Game\n\nCe jeu classique arrive bientôt !\nEn attendant, profite du Runner Game et des histoires interactives.')">
+                <div class="menu-card" onclick="showSection('snake')">
                     <span class="menu-icon">🐍</span>
                     <div class="menu-title">SNAKE GAME</div>
-                    <div class="menu-desc">🚧 Bientôt disponible</div>
+                    <div class="menu-desc">🎮 Mange et grandis !</div>
                 </div>
             </div>
         </div>
@@ -924,6 +955,12 @@
         <div class="chat-header">
             <span>💬 CHAT GLOBAL</span>
             <button class="chat-close" onclick="toggleChat()">×</button>
+        </div>
+        <div style="padding: 10px; background: var(--bg-tertiary); border-bottom: 2px solid var(--border-color);">
+            <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 5px;">👥 En ligne maintenant:</div>
+            <div id="onlineUsers" style="display: flex; flex-wrap: wrap; gap: 5px;">
+                <div style="color: var(--text-secondary); font-size: 12px;">Chargement...</div>
+            </div>
         </div>
         <div class="chat-messages" id="chatMessages">
             <div style="text-align: center; color: var(--text-secondary); padding: 20px;">
@@ -1310,6 +1347,7 @@
             alert('✅ CONNEXION RÉUSSIE !\n\nBon retour ' + user.username + ' ! 🎮');
             
             pendingVerification = null;
+            startHeartbeat();
         }
         
         async function sendVerificationEmail(email, code, type) {
@@ -1521,6 +1559,292 @@
             });
         }
         
+        // ========== SNAKE GAME ==========
+        let snakeGame = {
+            canvas: null,
+            ctx: null,
+            snake: [],
+            direction: 'RIGHT',
+            nextDirection: 'RIGHT',
+            food: null,
+            score: 0,
+            highScore: 0,
+            gameRunning: false,
+            gameLoop: null,
+            gridSize: 20,
+            tileCount: 20
+        };
+        
+        function loadSnakeSection() {
+            const content = document.getElementById('contentArea');
+            content.innerHTML = `
+                <div style="margin-bottom: 20px;">
+                    <button class="btn-primary" onclick="backToMainMenu()">◀ Retour</button>
+                </div>
+                
+                <div style="text-align: center;">
+                    <h2 style="font-size: 36px; margin-bottom: 20px;">🐍 SNAKE GAME</h2>
+                    <div style="font-size: 20px; margin-bottom: 20px; font-family: 'Courier Prime', monospace;">
+                        Score: <span id="snakeScore" style="color: var(--accent);">0</span> | 
+                        Record: <span id="snakeHighScore" style="color: var(--success);">0</span>
+                    </div>
+                    
+                    <div style="position: relative; display: inline-block;">
+                        <canvas id="snakeCanvas" width="400" height="400" style="border: 3px solid var(--accent); border-radius: 8px; background: var(--bg-secondary);"></canvas>
+                        <div id="snakeGameOver" class="game-over-screen hidden" style="width: 400px; height: 400px;">
+                            <h2>GAME OVER!</h2>
+                            <div class="final-stat">Score: <span id="snakeFinalScore">0</span></div>
+                            <button class="btn-primary" onclick="resetSnakeGame()">REJOUER</button>
+                            <button class="btn-primary" onclick="backToMainMenu()">MENU</button>
+                        </div>
+                    </div>
+                    
+                    <div class="mobile-controls" id="snakeMobileControls" style="display: none; margin-top: 20px;">
+                        <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+                            <button class="control-btn" onclick="changeSnakeDirection('UP')">⬆️</button>
+                            <div style="display: flex; gap: 10px;">
+                                <button class="control-btn" onclick="changeSnakeDirection('LEFT')">⬅️</button>
+                                <button class="control-btn" onclick="changeSnakeDirection('RIGHT')">➡️</button>
+                            </div>
+                            <button class="control-btn" onclick="changeSnakeDirection('DOWN')">⬇️</button>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 20px; color: var(--text-secondary);">
+                        <p>Clavier : ← → ↑ ↓ | Espace = Pause</p>
+                        <p>Mobile : Utilise les boutons tactiles</p>
+                    </div>
+                </div>
+            `;
+            
+            initSnakeGame();
+        }
+        
+        function initSnakeGame() {
+            snakeGame.canvas = document.getElementById('snakeCanvas');
+            snakeGame.ctx = snakeGame.canvas.getContext('2d');
+            snakeGame.highScore = STATE.profile.highScore || 0;
+            
+            document.getElementById('snakeHighScore').textContent = snakeGame.highScore;
+            
+            // Mobile detection
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            if (isMobile) {
+                document.getElementById('snakeMobileControls').style.display = 'flex';
+            }
+            
+            setupSnakeControls();
+            resetSnakeGame();
+        }
+        
+        function setupSnakeControls() {
+            document.addEventListener('keydown', (e) => {
+                if (!snakeGame.gameRunning) {
+                    if (e.key === ' ') {
+                        e.preventDefault();
+                        resetSnakeGame();
+                    }
+                    return;
+                }
+                
+                switch(e.key) {
+                    case 'ArrowUp':
+                        if (snakeGame.direction !== 'DOWN') snakeGame.nextDirection = 'UP';
+                        e.preventDefault();
+                        break;
+                    case 'ArrowDown':
+                        if (snakeGame.direction !== 'UP') snakeGame.nextDirection = 'DOWN';
+                        e.preventDefault();
+                        break;
+                    case 'ArrowLeft':
+                        if (snakeGame.direction !== 'RIGHT') snakeGame.nextDirection = 'LEFT';
+                        e.preventDefault();
+                        break;
+                    case 'ArrowRight':
+                        if (snakeGame.direction !== 'LEFT') snakeGame.nextDirection = 'RIGHT';
+                        e.preventDefault();
+                        break;
+                    case ' ':
+                        e.preventDefault();
+                        snakeGame.gameRunning = false;
+                        break;
+                }
+            });
+        }
+        
+        function changeSnakeDirection(dir) {
+            if (!snakeGame.gameRunning) return;
+            
+            if (dir === 'UP' && snakeGame.direction !== 'DOWN') snakeGame.nextDirection = 'UP';
+            if (dir === 'DOWN' && snakeGame.direction !== 'UP') snakeGame.nextDirection = 'DOWN';
+            if (dir === 'LEFT' && snakeGame.direction !== 'RIGHT') snakeGame.nextDirection = 'LEFT';
+            if (dir === 'RIGHT' && snakeGame.direction !== 'LEFT') snakeGame.nextDirection = 'RIGHT';
+        }
+        
+        function resetSnakeGame() {
+            // Initialize snake in center
+            snakeGame.snake = [
+                { x: 10, y: 10 },
+                { x: 9, y: 10 },
+                { x: 8, y: 10 }
+            ];
+            snakeGame.direction = 'RIGHT';
+            snakeGame.nextDirection = 'RIGHT';
+            snakeGame.score = 0;
+            snakeGame.gameRunning = true;
+            
+            document.getElementById('snakeGameOver').classList.add('hidden');
+            document.getElementById('snakeScore').textContent = 0;
+            
+            spawnFood();
+            
+            if (snakeGame.gameLoop) clearInterval(snakeGame.gameLoop);
+            snakeGame.gameLoop = setInterval(updateSnakeGame, 100);
+        }
+        
+        function spawnFood() {
+            let validPosition = false;
+            let newFood;
+            
+            while (!validPosition) {
+                newFood = {
+                    x: Math.floor(Math.random() * snakeGame.tileCount),
+                    y: Math.floor(Math.random() * snakeGame.tileCount)
+                };
+                
+                validPosition = !snakeGame.snake.some(segment => 
+                    segment.x === newFood.x && segment.y === newFood.y
+                );
+            }
+            
+            snakeGame.food = newFood;
+        }
+        
+        function updateSnakeGame() {
+            if (!snakeGame.gameRunning) return;
+            
+            // Update direction
+            snakeGame.direction = snakeGame.nextDirection;
+            
+            // Calculate new head position
+            const head = { ...snakeGame.snake[0] };
+            
+            switch(snakeGame.direction) {
+                case 'UP': head.y--; break;
+                case 'DOWN': head.y++; break;
+                case 'LEFT': head.x--; break;
+                case 'RIGHT': head.x++; break;
+            }
+            
+            // Check wall collision
+            if (head.x < 0 || head.x >= snakeGame.tileCount || 
+                head.y < 0 || head.y >= snakeGame.tileCount) {
+                gameOverSnake();
+                return;
+            }
+            
+            // Check self collision
+            if (snakeGame.snake.some(segment => segment.x === head.x && segment.y === head.y)) {
+                gameOverSnake();
+                return;
+            }
+            
+            // Add new head
+            snakeGame.snake.unshift(head);
+            
+            // Check food collision
+            if (head.x === snakeGame.food.x && head.y === snakeGame.food.y) {
+                snakeGame.score += 10;
+                STATE.profile.totalCoins += 5;
+                document.getElementById('snakeScore').textContent = snakeGame.score;
+                spawnFood();
+                playSound('coinSound');
+                saveState();
+                updateUI();
+            } else {
+                // Remove tail if no food eaten
+                snakeGame.snake.pop();
+            }
+            
+            drawSnakeGame();
+        }
+        
+        function drawSnakeGame() {
+            const ctx = snakeGame.ctx;
+            const gridSize = snakeGame.gridSize;
+            
+            // Clear canvas
+            ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--bg-secondary');
+            ctx.fillRect(0, 0, 400, 400);
+            
+            // Draw grid
+            ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--border-color');
+            ctx.lineWidth = 0.5;
+            for (let i = 0; i <= snakeGame.tileCount; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * gridSize, 0);
+                ctx.lineTo(i * gridSize, 400);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(0, i * gridSize);
+                ctx.lineTo(400, i * gridSize);
+                ctx.stroke();
+            }
+            
+            // Draw food
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.arc(
+                snakeGame.food.x * gridSize + gridSize / 2,
+                snakeGame.food.y * gridSize + gridSize / 2,
+                gridSize / 2 - 2,
+                0,
+                Math.PI * 2
+            );
+            ctx.fill();
+            
+            // Draw snake
+            snakeGame.snake.forEach((segment, index) => {
+                if (index === 0) {
+                    // Head
+                    ctx.fillStyle = '#4ade80';
+                } else {
+                    // Body
+                    ctx.fillStyle = '#667eea';
+                }
+                
+                ctx.fillRect(
+                    segment.x * gridSize + 1,
+                    segment.y * gridSize + 1,
+                    gridSize - 2,
+                    gridSize - 2
+                );
+            });
+        }
+        
+        function gameOverSnake() {
+            snakeGame.gameRunning = false;
+            clearInterval(snakeGame.gameLoop);
+            playSound('gameoverSound');
+            
+            // Update high score
+            if (snakeGame.score > snakeGame.highScore) {
+                snakeGame.highScore = snakeGame.score;
+                STATE.profile.highScore = snakeGame.score;
+                document.getElementById('snakeHighScore').textContent = snakeGame.highScore;
+                saveState();
+                updateUI();
+                
+                if (currentUser) {
+                    sendRecordEmail(STATE.profile.name, snakeGame.score);
+                }
+            }
+            
+            document.getElementById('snakeFinalScore').textContent = snakeGame.score;
+            document.getElementById('snakeGameOver').classList.remove('hidden');
+        }
+        
         // ========== NAVIGATION ==========
         function showSection(section) {
             const content = document.getElementById('contentArea');
@@ -1532,6 +1856,9 @@
                     break;
                 case 'runner':
                     loadRunnerSection();
+                    break;
+                case 'snake':
+                    loadSnakeSection();
                     break;
                 case 'shop':
                     loadShopSection();
@@ -2608,6 +2935,9 @@
         let lastMessageTime = 0;
         let messageCount = 0;
         let chatSubscription = null;
+        let onlineUsersSubscription = null;
+        let onlineUsers = [];
+        let heartbeatInterval = null;
         
         function toggleChat() {
             chatOpen = !chatOpen;
@@ -2618,6 +2948,8 @@
                 chatWindow.classList.add('open');
                 loadChatMessages();
                 subscribeToChat();
+                loadOnlineUsers();
+                subscribeToOnlineUsers();
                 
                 // Remove notification
                 const notif = chatBtn.querySelector('.chat-notification');
@@ -2627,8 +2959,115 @@
                 if (chatSubscription) {
                     chatSubscription.unsubscribe();
                 }
+                if (onlineUsersSubscription) {
+                    onlineUsersSubscription.unsubscribe();
+                }
             }
         }
+        
+        async function updateOnlineStatus() {
+            if (!currentUser || !supabaseClient) return;
+            
+            try {
+                // Update or insert user presence
+                const { error } = await supabaseClient
+                    .from('online_users')
+                    .upsert({
+                        user_id: currentUser.id,
+                        username: STATE.profile.name,
+                        avatar: STATE.profile.avatar,
+                        last_seen: new Date().toISOString()
+                    }, {
+                        onConflict: 'user_id'
+                    });
+                
+                if (error) console.error('Erreur update presence:', error);
+            } catch (error) {
+                console.error('Erreur presence:', error);
+            }
+        }
+        
+        async function loadOnlineUsers() {
+            if (!supabaseClient) {
+                document.getElementById('onlineUsers').innerHTML = '<div style="color: var(--text-secondary); font-size: 12px;">Service non disponible</div>';
+                return;
+            }
+            
+            try {
+                // Get users active in last 2 minutes
+                const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString();
+                
+                const { data, error } = await supabaseClient
+                    .from('online_users')
+                    .select('*')
+                    .gte('last_seen', twoMinutesAgo)
+                    .order('last_seen', { ascending: false });
+                
+                if (error && error.code === '42P01') {
+                    document.getElementById('onlineUsers').innerHTML = '<div style="color: var(--text-secondary); font-size: 12px;">Table non créée (voir SQL)</div>';
+                    return;
+                }
+                
+                if (error) throw error;
+                
+                onlineUsers = data || [];
+                renderOnlineUsers();
+                
+            } catch (error) {
+                console.error('Erreur online users:', error);
+                document.getElementById('onlineUsers').innerHTML = '<div style="color: var(--danger); font-size: 12px;">Erreur</div>';
+            }
+        }
+        
+        function renderOnlineUsers() {
+            const container = document.getElementById('onlineUsers');
+            
+            if (onlineUsers.length === 0) {
+                container.innerHTML = '<div style="color: var(--text-secondary); font-size: 12px;">Personne en ligne</div>';
+                return;
+            }
+            
+            let html = '';
+            onlineUsers.forEach(user => {
+                html += `
+                    <div class="online-user">
+                        <span class="online-indicator"></span>
+                        <span class="online-user-avatar">${user.avatar}</span>
+                        <span class="online-user-name">${user.username}</span>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        function subscribeToOnlineUsers() {
+            if (!supabaseClient) return;
+            
+            onlineUsersSubscription = supabaseClient
+                .channel('online_users_channel')
+                .on('postgres_changes',
+                    { event: '*', schema: 'public', table: 'online_users' },
+                    () => {
+                        loadOnlineUsers();
+                    }
+                )
+                .subscribe();
+        }
+        
+        function startHeartbeat() {
+            if (heartbeatInterval) clearInterval(heartbeatInterval);
+            
+            // Update presence every minute
+            heartbeatInterval = setInterval(() => {
+                updateOnlineStatus();
+            }, 60000);
+            
+            // Initial update
+            updateOnlineStatus();
+        }
+        
+        // ========== CHAT MESSAGES ==========
         
         async function loadChatMessages() {
             if (!supabaseClient) {
