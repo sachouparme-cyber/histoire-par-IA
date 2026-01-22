@@ -2145,14 +2145,13 @@
                     </div>
                     
                     <div class="mobile-controls" id="mobileControls">
-                        <button class="control-btn" id="btnLeft">⬅️</button>
-                        <button class="control-btn jump" id="btnJump">⬆️</button>
-                        <button class="control-btn" id="btnRight">➡️</button>
+                        <button class="control-btn" id="btnLeft" style="font-size: 40px; padding: 25px 40px;">⬅️</button>
+                        <button class="control-btn" id="btnRight" style="font-size: 40px; padding: 25px 40px;">➡️</button>
                     </div>
                     
                     <div style="text-align: center; margin-top: 20px; color: #fff; font-family: 'Courier Prime', monospace; font-size: 14px;">
                         <span id="pcControls">Clavier : ← → ↑  •  Espace = Pause</span>
-                        <span id="mobileControlsText" style="display: none;">Boutons tactiles ci-dessus</span>
+                        <span id="mobileControlsText" style="display: none;">⬅️ ➡️ pour changer de voie • Saute automatiquement</span>
                     </div>
                     
                     <div style="margin-top: 20px; text-align: center;">
@@ -2393,8 +2392,18 @@
         }
         
         function spawnPowerup() {
-            const types = ['shield', 'magnet', 'speed'];
-            const type = types[Math.floor(Math.random() * types.length)];
+            // Weighted random: 50% magnet, 35% shield, 15% speed
+            const rand = Math.random();
+            let type;
+            
+            if (rand < 0.50) {
+                type = 'magnet'; // 50% chance
+            } else if (rand < 0.85) {
+                type = 'shield'; // 35% chance
+            } else {
+                type = 'speed'; // 15% chance
+            }
+            
             const lane = Math.floor(Math.random() * 3);
             powerupsList.push({
                 x: lanes[lane],
@@ -2468,15 +2477,28 @@
                 }
             });
             
-            // Coins
-            const magnetRange = player.powerups.magnet > 0 ? 80 : 30;
+            // Coins with magnet attraction
+            const magnetRange = player.powerups.magnet > 0 ? 200 : 30;
+            const collectRange = 30; // Distance to actually collect the coin
+            
             coinsList.forEach(coin => {
                 if (!coin.collected) {
                     const distance = Math.sqrt(
                         Math.pow(player.x - coin.x, 2) + 
                         Math.pow((player.y - 30) - coin.y, 2)
                     );
-                    if (distance < magnetRange) {
+                    
+                    // Magnet attraction - pull coins towards player
+                    if (player.powerups.magnet > 0 && distance < magnetRange && distance > collectRange) {
+                        const pullSpeed = 10;
+                        const dx = player.x - coin.x;
+                        const dy = (player.y - 30) - coin.y;
+                        coin.x += (dx / distance) * pullSpeed;
+                        coin.y += (dy / distance) * pullSpeed;
+                    }
+                    
+                    // Collect coin only when very close
+                    if (distance < collectRange) {
                         coin.collected = true;
                         gameCoins += 10;
                         STATE.profile.totalCoins += 10;
@@ -2574,7 +2596,6 @@
         function setupMobileControls() {
             const btnLeft = document.getElementById('btnLeft');
             const btnRight = document.getElementById('btnRight');
-            const btnJump = document.getElementById('btnJump');
             
             if (btnLeft) {
                 btnLeft.addEventListener('touchstart', (e) => {
@@ -2593,24 +2614,6 @@
                 });
                 btnRight.addEventListener('click', () => {
                     if (gameRunning && player.lane < 2) player.lane++;
-                });
-            }
-            
-            if (btnJump) {
-                btnJump.addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    if (gameRunning && !player.jumping) {
-                        player.jumping = true;
-                        player.jumpSpeed = 15;
-                        playSound('jumpSound');
-                    }
-                });
-                btnJump.addEventListener('click', () => {
-                    if (gameRunning && !player.jumping) {
-                        player.jumping = true;
-                        player.jumpSpeed = 15;
-                        playSound('jumpSound');
-                    }
                 });
             }
         }
