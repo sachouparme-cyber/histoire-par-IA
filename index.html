@@ -871,8 +871,8 @@
                     <button class="lang-btn" onclick="setLanguage('es')">🇪🇸</button>
                 </div>
                 <button class="icon-btn" id="themeToggle" onclick="toggleTheme()" title="Changer le thème">🌙</button>
-                <button class="icon-btn" onclick="toggleOnlineUsers()" title="Joueurs en ligne" id="onlineUsersBtn">👥</button>
-                <button class="icon-btn" onclick="toggleChat()" title="Chat global" id="chatBtn">💬</button>
+                <button class="icon-btn" onclick="alert('🚧 EN MAINTENANCE\n\nLe chat revient bientôt !\n\n✅ Le RUNNER GAME reste disponible.')" title="Chat (Maintenance)" style="opacity: 0.5;">💬</button>
+                <button class="icon-btn" onclick="alert('🚧 EN MAINTENANCE\n\nCette fonctionnalité revient bientôt !\n\n✅ Le RUNNER GAME reste disponible.')" title="Joueurs en ligne (Maintenance)" style="opacity: 0.5;">👥</button>
                 <button class="icon-btn" id="btnCreateAccount" onclick="showCreateAccountModal()" title="Créer un compte" style="background: #4ade80; border-color: #4ade80;">✨</button>
                 <button class="icon-btn" id="btnLogin" onclick="showLoginModal()" title="Se connecter">🔐</button>
                 <button class="icon-btn" id="btnProfile" onclick="editProfile()" title="Mon profil" style="display: none;">👤</button>
@@ -924,33 +924,45 @@
             </div>
         </div>
         
+        <!-- MAINTENANCE BANNER -->
+        <div style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%); padding: 30px; border-radius: 15px; margin-bottom: 30px; text-align: center; border: 3px solid #ff4757; animation: fadeIn 0.5s;">
+            <div style="font-size: 48px; margin-bottom: 10px;">🚧</div>
+            <div style="font-size: 32px; font-weight: bold; color: #fff; margin-bottom: 10px;">GROSSE MISE À JOUR EN COURS</div>
+            <div style="font-size: 18px; color: #fff; opacity: 0.95; margin-bottom: 15px;">Le site est en maintenance !</div>
+            <div style="font-size: 16px; color: #fff; opacity: 0.9; margin-bottom: 10px;">De nouvelles fonctionnalités incroyables arrivent bientôt... 🚀</div>
+            <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px; margin-top: 20px;">
+                <div style="font-size: 20px; font-weight: bold; color: #fff; margin-bottom: 5px;">✅ RUNNER GAME reste disponible !</div>
+                <div style="font-size: 14px; color: #fff; opacity: 0.8;">Les autres sections reviennent très bientôt...</div>
+            </div>
+        </div>
+        
         <!-- MAIN MENU -->
         <div id="mainMenu">
             <div class="main-menu">
-                <div class="menu-card" onclick="showSection('stories')">
+                <div class="menu-card" style="opacity: 0.5; cursor: not-allowed; border-color: #666;" onclick="alert('🚧 EN MAINTENANCE\n\nCette section revient bientôt avec de grosses améliorations !\n\n✅ Le RUNNER GAME reste disponible.')">
                     <span class="menu-icon">📖</span>
                     <div class="menu-title" data-i18n="stories-title">HISTOIRES</div>
-                    <div class="menu-desc" data-i18n="stories-desc">30 aventures interactives</div>
+                    <div class="menu-desc">🚧 Maintenance</div>
                 </div>
-                <div class="menu-card" onclick="showSection('runner')">
+                <div class="menu-card" onclick="showSection('runner')" style="border-color: #4ade80; box-shadow: 0 0 20px rgba(74, 222, 128, 0.3);">
                     <span class="menu-icon">🏃</span>
                     <div class="menu-title" data-i18n="runner-title">RUNNER GAME</div>
-                    <div class="menu-desc" data-i18n="runner-desc">Cours et évite les obstacles</div>
+                    <div class="menu-desc">✅ Disponible !</div>
                 </div>
-                <div class="menu-card" onclick="showSection('shop')">
+                <div class="menu-card" style="opacity: 0.5; cursor: not-allowed; border-color: #666;" onclick="alert('🚧 EN MAINTENANCE\n\nCette section revient bientôt avec de grosses améliorations !\n\n✅ Le RUNNER GAME reste disponible.')">
                     <span class="menu-icon">🛍️</span>
                     <div class="menu-title" data-i18n="shop-title">BOUTIQUE</div>
-                    <div class="menu-desc" data-i18n="shop-desc">Débloquer des skins</div>
+                    <div class="menu-desc">🚧 Maintenance</div>
                 </div>
-                <div class="menu-card" onclick="showSection('leaderboard')">
+                <div class="menu-card" style="opacity: 0.5; cursor: not-allowed; border-color: #666;" onclick="alert('🚧 EN MAINTENANCE\n\nCette section revient bientôt avec de grosses améliorations !\n\n✅ Le RUNNER GAME reste disponible.')">
                     <span class="menu-icon">🏆</span>
                     <div class="menu-title" data-i18n="leaderboard-title">CLASSEMENT</div>
-                    <div class="menu-desc" data-i18n="leaderboard-desc">Top 10 des scores</div>
+                    <div class="menu-desc">🚧 Maintenance</div>
                 </div>
-                <div class="menu-card" onclick="showSection('snake')">
+                <div class="menu-card" style="opacity: 0.5; cursor: not-allowed; border-color: #666;" onclick="alert('🚧 EN MAINTENANCE\n\nCette section revient bientôt avec de grosses améliorations !\n\n✅ Le RUNNER GAME reste disponible.')">
                     <span class="menu-icon">🐍</span>
                     <div class="menu-title">SNAKE GAME</div>
-                    <div class="menu-desc">🎮 Mange et grandis !</div>
+                    <div class="menu-desc">🚧 Maintenance</div>
                 </div>
             </div>
         </div>
