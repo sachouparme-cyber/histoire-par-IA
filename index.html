@@ -649,6 +649,47 @@
         
         .hidden { display: none !important; }
         
+        /* ========== iOS GLASSMORPHISM (Mobile + Mac ONLY) ========== */
+        @media only screen and (max-width: 768px) {
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, sans-serif !important;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%) !important;
+                background-size: 400% 400% !important;
+                animation: iosGradient 15s ease infinite !important;
+            }
+            
+            @keyframes iosGradient {
+                0%, 100% { background-position: 0% 50%; }
+                50% { background-position: 100% 50%; }
+            }
+            
+            .profile-bar, .menu-card, #tournamentBanner {
+                background: rgba(255, 255, 255, 0.15) !important;
+                backdrop-filter: blur(20px) saturate(180%) !important;
+                -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+                border: 1px solid rgba(255, 255, 255, 0.3) !important;
+                border-radius: 20px !important;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+            }
+            
+            .icon-btn {
+                background: rgba(255, 255, 255, 0.2) !important;
+                backdrop-filter: blur(10px) !important;
+                -webkit-backdrop-filter: blur(10px) !important;
+                border: 1px solid rgba(255, 255, 255, 0.3) !important;
+                color: #fff !important;
+            }
+            
+            .menu-title, .profile-name, h1 {
+                color: #fff !important;
+                text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+            }
+            
+            .menu-desc, .tagline {
+                color: rgba(255, 255, 255, 0.9) !important;
+            }
+        }
+        
         /* ========== CHAT WINDOW ========== */
         #chatWindow {
             position: fixed;
@@ -871,8 +912,8 @@
                     <button class="lang-btn" onclick="setLanguage('es')">🇪🇸</button>
                 </div>
                 <button class="icon-btn" id="themeToggle" onclick="toggleTheme()" title="Changer le thème">🌙</button>
-                <button class="icon-btn" onclick="alert('🚧 EN MAINTENANCE\n\nLe chat revient bientôt !\n\n✅ Le RUNNER GAME reste disponible.')" title="Chat (Maintenance)" style="opacity: 0.5;">💬</button>
-                <button class="icon-btn" onclick="alert('🚧 EN MAINTENANCE\n\nCette fonctionnalité revient bientôt !\n\n✅ Le RUNNER GAME reste disponible.')" title="Joueurs en ligne (Maintenance)" style="opacity: 0.5;">👥</button>
+                <button class="icon-btn" onclick="toggleOnlineUsers()" title="Joueurs en ligne" id="onlineUsersBtn">👥</button>
+                <button class="icon-btn" onclick="toggleChat()" title="Chat global" id="chatBtn">💬</button>
                 <button class="icon-btn" id="btnCreateAccount" onclick="showCreateAccountModal()" title="Créer un compte" style="background: #4ade80; border-color: #4ade80;">✨</button>
                 <button class="icon-btn" id="btnLogin" onclick="showLoginModal()" title="Se connecter">🔐</button>
                 <button class="icon-btn" id="btnProfile" onclick="editProfile()" title="Mon profil" style="display: none;">👤</button>
@@ -924,45 +965,57 @@
             </div>
         </div>
         
-        <!-- MAINTENANCE BANNER -->
-        <div style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%); padding: 30px; border-radius: 15px; margin-bottom: 30px; text-align: center; border: 3px solid #ff4757; animation: fadeIn 0.5s;">
-            <div style="font-size: 48px; margin-bottom: 10px;">🚧</div>
-            <div style="font-size: 32px; font-weight: bold; color: #fff; margin-bottom: 10px;">GROSSE MISE À JOUR EN COURS</div>
-            <div style="font-size: 18px; color: #fff; opacity: 0.95; margin-bottom: 15px;">Le site est en maintenance !</div>
-            <div style="font-size: 16px; color: #fff; opacity: 0.9; margin-bottom: 10px;">De nouvelles fonctionnalités incroyables arrivent bientôt... 🚀</div>
-            <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px; margin-top: 20px;">
-                <div style="font-size: 20px; font-weight: bold; color: #fff; margin-bottom: 5px;">✅ RUNNER GAME reste disponible !</div>
-                <div style="font-size: 14px; color: #fff; opacity: 0.8;">Les autres sections reviennent très bientôt...</div>
+        <!-- TOURNAMENT BANNER -->
+        <div id="tournamentBanner" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 25px; border-radius: 15px; margin-bottom: 30px; text-align: center; border: 3px solid #667eea; box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3); animation: fadeIn 0.5s;">
+            <div style="font-size: 40px; margin-bottom: 10px;">🏆</div>
+            <div style="font-size: 28px; font-weight: bold; color: #fff; margin-bottom: 5px;">TOURNOI SNAKE HEBDOMADAIRE</div>
+            <div style="font-size: 14px; color: rgba(255,255,255,0.8); margin-bottom: 20px;">Chaque semaine, nouveau tournoi • Récompenses garanties !</div>
+            <div style="display: flex; justify-content: center; gap: 20px; margin-top: 15px; flex-wrap: wrap;">
+                <div style="background: rgba(0,0,0,0.25); padding: 15px 20px; border-radius: 10px; min-width: 140px;">
+                    <div style="font-size: 12px; color: rgba(255,255,255,0.7); margin-bottom: 5px;">⏰ Temps restant</div>
+                    <div style="font-size: 22px; font-weight: bold; color: #fff;" id="tournamentTimer">-</div>
+                </div>
+                <div style="background: rgba(0,0,0,0.25); padding: 15px 20px; border-radius: 10px; min-width: 140px;">
+                    <div style="font-size: 12px; color: rgba(255,255,255,0.7); margin-bottom: 5px;">🎯 Ton meilleur</div>
+                    <div style="font-size: 22px; font-weight: bold; color: #FFD700;" id="tournamentMyScore">0</div>
+                </div>
+                <div style="background: rgba(0,0,0,0.25); padding: 15px 20px; border-radius: 10px; min-width: 140px;">
+                    <div style="font-size: 12px; color: rgba(255,255,255,0.7); margin-bottom: 5px;">🎁 Top 3</div>
+                    <div style="font-size: 16px; font-weight: bold; color: #fff;">🥇1000 🥈500 🥉250</div>
+                </div>
             </div>
+            <button onclick="showSection('snake')" style="margin-top: 20px; background: #FFD700; color: #000; border: none; padding: 15px 35px; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; font-family: 'Courier Prime', monospace; box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4); transition: all 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                🐍 JOUER AU TOURNOI
+            </button>
         </div>
         
         <!-- MAIN MENU -->
         <div id="mainMenu">
             <div class="main-menu">
-                <div class="menu-card" style="opacity: 0.5; cursor: not-allowed; border-color: #666;" onclick="alert('🚧 EN MAINTENANCE\n\nCette section revient bientôt avec de grosses améliorations !\n\n✅ Le RUNNER GAME reste disponible.')">
+                <div class="menu-card" onclick="showSection('stories')">
                     <span class="menu-icon">📖</span>
                     <div class="menu-title" data-i18n="stories-title">HISTOIRES</div>
-                    <div class="menu-desc">🚧 Maintenance</div>
+                    <div class="menu-desc" data-i18n="stories-desc">30 aventures interactives</div>
                 </div>
-                <div class="menu-card" onclick="showSection('runner')" style="border-color: #4ade80; box-shadow: 0 0 20px rgba(74, 222, 128, 0.3);">
+                <div class="menu-card" onclick="showSection('runner')">
                     <span class="menu-icon">🏃</span>
                     <div class="menu-title" data-i18n="runner-title">RUNNER GAME</div>
-                    <div class="menu-desc">✅ Disponible !</div>
+                    <div class="menu-desc" data-i18n="runner-desc">Cours et évite les obstacles</div>
                 </div>
-                <div class="menu-card" style="opacity: 0.5; cursor: not-allowed; border-color: #666;" onclick="alert('🚧 EN MAINTENANCE\n\nCette section revient bientôt avec de grosses améliorations !\n\n✅ Le RUNNER GAME reste disponible.')">
+                <div class="menu-card" onclick="showSection('shop')">
                     <span class="menu-icon">🛍️</span>
                     <div class="menu-title" data-i18n="shop-title">BOUTIQUE</div>
-                    <div class="menu-desc">🚧 Maintenance</div>
+                    <div class="menu-desc" data-i18n="shop-desc">Débloquer des skins</div>
                 </div>
-                <div class="menu-card" style="opacity: 0.5; cursor: not-allowed; border-color: #666;" onclick="alert('🚧 EN MAINTENANCE\n\nCette section revient bientôt avec de grosses améliorations !\n\n✅ Le RUNNER GAME reste disponible.')">
+                <div class="menu-card" onclick="showSection('leaderboard')">
                     <span class="menu-icon">🏆</span>
                     <div class="menu-title" data-i18n="leaderboard-title">CLASSEMENT</div>
-                    <div class="menu-desc">🚧 Maintenance</div>
+                    <div class="menu-desc" data-i18n="leaderboard-desc">Top 10 des scores</div>
                 </div>
-                <div class="menu-card" style="opacity: 0.5; cursor: not-allowed; border-color: #666;" onclick="alert('🚧 EN MAINTENANCE\n\nCette section revient bientôt avec de grosses améliorations !\n\n✅ Le RUNNER GAME reste disponible.')">
+                <div class="menu-card" onclick="showSection('snake')">
                     <span class="menu-icon">🐍</span>
                     <div class="menu-title">SNAKE GAME</div>
-                    <div class="menu-desc">🚧 Maintenance</div>
+                    <div class="menu-desc">🎮 Mange et grandis !</div>
                 </div>
             </div>
         </div>
@@ -1046,7 +1099,9 @@
                 xp: 0,
                 totalCoins: 0,
                 storiesCompleted: 0,
-                highScore: 0
+                highScore: 0,
+                badges: [],
+                customColor: '#667eea'
             },
             runnerGame: {
                 score: 0,
@@ -1054,10 +1109,74 @@
                 speed: 5,
                 powerups: [],
                 currentSkin: 'default',
-                unlockedSkins: ['default'],
+                unlockedSkins: ['default', 'speedster', 'tank', 'shadow', 'neon', 'cyber'],
                 leaderboard: []
+            },
+            tournament: {
+                active: true,
+                myBestScore: 0,
+                startDate: null,
+                endDate: null
             }
         };
+        
+        // ========== TOURNAMENT SYSTEM ==========
+        function initTournament() {
+            const now = new Date();
+            const dayOfWeek = now.getDay();
+            const monday = new Date(now);
+            monday.setDate(now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1));
+            monday.setHours(0, 0, 0, 0);
+            
+            const sunday = new Date(monday);
+            sunday.setDate(monday.getDate() + 6);
+            sunday.setHours(23, 59, 59, 999);
+            
+            STATE.tournament.startDate = monday.getTime();
+            STATE.tournament.endDate = sunday.getTime();
+        }
+        
+        function updateTournamentTimer() {
+            const timer = document.getElementById('tournamentTimer');
+            if (!timer) return;
+            
+            const now = Date.now();
+            const end = STATE.tournament.endDate;
+            const diff = end - now;
+            
+            if (diff <= 0) {
+                timer.textContent = "Terminé !";
+                return;
+            }
+            
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            
+            timer.textContent = days > 0 ? `${days}j ${hours}h` : `${hours}h restantes`;
+        }
+        
+        async function submitTournamentScore(score) {
+            if (!supabaseClient) return;
+            
+            STATE.tournament.myBestScore = Math.max(STATE.tournament.myBestScore || 0, score);
+            
+            const myScoreEl = document.getElementById('tournamentMyScore');
+            if (myScoreEl) myScoreEl.textContent = STATE.tournament.myBestScore;
+            
+            if (!currentUser) return;
+            
+            try {
+                await supabaseClient.from('tournament_scores').upsert({
+                    user_id: currentUser.id,
+                    username: STATE.profile.name,
+                    avatar: STATE.profile.avatar,
+                    score: score,
+                    week_start: new Date(STATE.tournament.startDate).toISOString()
+                }, { onConflict: 'user_id,week_start' });
+            } catch (e) {
+                console.log('Tournoi:', e.message);
+            }
+        }
         
         // ========== LEVEL-UP SYSTEM ==========
         const LEVEL_REQUIREMENTS = [
@@ -1146,9 +1265,12 @@
         // ========== INITIALIZATION ==========
         function init() {
             loadState();
+            initTournament();
             updateUI();
             setupEventListeners();
             updateAuthButtons();
+            updateTournamentTimer();
+            setInterval(updateTournamentTimer, 60000); // Update every minute
         }
         
         function loadState() {
@@ -2041,6 +2163,9 @@
             snakeGame.gameRunning = false;
             clearInterval(snakeGame.gameLoop);
             playSound('gameoverSound');
+            
+            // Submit to tournament
+            submitTournamentScore(snakeGame.score);
             
             // Update high score
             if (snakeGame.score > snakeGame.highScore) {
