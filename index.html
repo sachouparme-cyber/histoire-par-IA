@@ -656,6 +656,7 @@
                 background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%) !important;
                 background-size: 400% 400% !important;
                 animation: iosGradient 15s ease infinite !important;
+                padding-bottom: 80px !important;
             }
             
             @keyframes iosGradient {
@@ -687,6 +688,57 @@
             
             .menu-desc, .tagline {
                 color: rgba(255, 255, 255, 0.9) !important;
+            }
+            
+            /* iOS Bottom Navigation Bar */
+            .ios-navbar {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 70px;
+                background: rgba(255, 255, 255, 0.2);
+                backdrop-filter: blur(30px) saturate(180%);
+                -webkit-backdrop-filter: blur(30px) saturate(180%);
+                border-top: 0.5px solid rgba(255, 255, 255, 0.3);
+                display: flex;
+                justify-content: space-around;
+                align-items: center;
+                padding: 0 20px;
+                z-index: 10000;
+                box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.1);
+            }
+            
+            .ios-nav-item {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 4px;
+                cursor: pointer;
+                transition: all 0.3s;
+                padding: 8px 12px;
+                border-radius: 12px;
+            }
+            
+            .ios-nav-item:active {
+                transform: scale(0.9);
+                background: rgba(255, 255, 255, 0.15);
+            }
+            
+            .ios-nav-icon {
+                font-size: 26px;
+                filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+            }
+            
+            .ios-nav-label {
+                font-size: 11px;
+                color: #fff;
+                font-weight: 500;
+                text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            }
+            
+            .ios-nav-item.active .ios-nav-icon {
+                transform: scale(1.1);
             }
         }
         
@@ -1016,6 +1068,11 @@
                     <span class="menu-icon">🐍</span>
                     <div class="menu-title">SNAKE GAME</div>
                     <div class="menu-desc">🎮 Mange et grandis !</div>
+                </div>
+                <div class="menu-card" onclick="showSection('conquest')">
+                    <span class="menu-icon">🗺️</span>
+                    <div class="menu-title">TERRACONQUEST</div>
+                    <div class="menu-desc">⚔️ Conquête territoriale !</div>
                 </div>
             </div>
         </div>
@@ -2184,6 +2241,23 @@
             document.getElementById('snakeGameOver').classList.remove('hidden');
         }
         
+        // ========== TERRACONQUEST GAME ==========
+        function loadConquestSection() {
+            const content = document.getElementById('contentArea');
+            content.innerHTML = `
+                <button class="btn-primary" onclick="backToMainMenu()" style="margin-bottom: 20px;">◀ Retour</button>
+                <div style="text-align: center; padding: 40px;">
+                    <h2 style="margin-bottom: 20px;">🗺️ TERRACONQUEST</h2>
+                    <p style="margin-bottom: 30px; color: var(--text-secondary);">Jeu de conquête territoriale en développement...</p>
+                    <div style="background: rgba(255,255,255,0.1); padding: 40px; border-radius: 15px;">
+                        <div style="font-size: 48px; margin-bottom: 20px;">🚧</div>
+                        <p style="font-size: 18px;">Ce jeu sera disponible dans la prochaine mise à jour !</p>
+                        <p style="margin-top: 15px; opacity: 0.7;">En attendant, profite des autres jeux ! 🎮</p>
+                    </div>
+                </div>
+            `;
+        }
+        
         // ========== NAVIGATION ==========
         function showSection(section) {
             const content = document.getElementById('contentArea');
@@ -2199,6 +2273,9 @@
                 case 'snake':
                     loadSnakeSection();
                     break;
+                case 'conquest':
+                    loadConquestSection();
+                    break;
                 case 'shop':
                     loadShopSection();
                     break;
@@ -2211,6 +2288,11 @@
         function backToMainMenu() {
             document.getElementById('contentArea').innerHTML = '';
             document.getElementById('mainMenu').style.display = 'block';
+        }
+        
+        function showMainMenu() {
+            backToMainMenu();
+            window.scrollTo(0, 0);
         }
         
         
@@ -3628,5 +3710,29 @@
         
         init();
     </script>
+    
+    <!-- iOS BOTTOM NAVIGATION BAR (Mobile only) -->
+    <div class="ios-navbar">
+        <div class="ios-nav-item" onclick="showMainMenu()">
+            <div class="ios-nav-icon">🏠</div>
+            <div class="ios-nav-label">Accueil</div>
+        </div>
+        <div class="ios-nav-item" onclick="showSection('runner')">
+            <div class="ios-nav-icon">🏃</div>
+            <div class="ios-nav-label">Runner</div>
+        </div>
+        <div class="ios-nav-item" onclick="showSection('snake')">
+            <div class="ios-nav-icon">🐍</div>
+            <div class="ios-nav-label">Snake</div>
+        </div>
+        <div class="ios-nav-item" onclick="toggleChat()">
+            <div class="ios-nav-icon">💬</div>
+            <div class="ios-nav-label">Chat</div>
+        </div>
+        <div class="ios-nav-item" onclick="editProfile()">
+            <div class="ios-nav-icon">👤</div>
+            <div class="ios-nav-label">Profil</div>
+        </div>
+    </div>
 </body>
 </html>
